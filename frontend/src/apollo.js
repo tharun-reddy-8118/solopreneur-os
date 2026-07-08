@@ -1,7 +1,7 @@
 import { createClient, cacheExchange, fetchExchange } from 'urql';
 
 const client = createClient({
-  url: 'http://127.0.0.1:8000/graphql',
+  url: 'https://solopreneuros-backend.hf.space/graphql',
   exchanges: [cacheExchange, fetchExchange],
   fetchOptions: () => {
     const token = localStorage.getItem('token');
