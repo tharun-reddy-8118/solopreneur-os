@@ -131,8 +131,8 @@ export default function Clients() {
           }
         />
       ) : (
-        <div className="glass-card overflow-hidden bg-white">
-          <div className="p-0">
+        <div className="glass-card overflow-x-auto bg-white">
+          <div className="p-0 min-w-[700px]">
             <div className="flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
               <div className="w-1/3">Client</div>
               <div className="w-1/3">Contact</div>
