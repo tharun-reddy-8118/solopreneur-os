@@ -115,9 +115,9 @@ export default function Expenses() {
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-700">
                   {data.expenses.map(expense => (
-                    <div key={expense.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between group">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900/50 flex items-center justify-center text-slate-400 dark:text-slate-500">
+                    <div key={expense.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between group gap-4 sm:gap-0">
+                      <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900/50 flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0">
                           <TrendingDown size={20} />
                         </div>
                         <div>
@@ -128,11 +128,11 @@ export default function Expenses() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6">
+                      <div className="flex items-center justify-between w-full sm:w-auto sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-700">
                         <span className="text-lg font-black text-rose-600">
                           -{currencySymbol}{expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
                         </span>
-                        <button onClick={() => handleDelete(expense.id)} disabled={deleteResult.fetching} className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                        <button onClick={() => handleDelete(expense.id)} disabled={deleteResult.fetching} className="text-slate-300 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100 p-2 sm:p-0">
                           <Trash2 size={18} />
                         </button>
                       </div>
