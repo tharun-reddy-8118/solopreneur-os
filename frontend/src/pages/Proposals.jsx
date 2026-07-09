@@ -293,7 +293,7 @@ export default function Proposals() {
                   </div>
                   
                   {formData.lineItems.map((item, index) => (
-                    <div key={index} className="flex gap-4 mb-4">
+                    <div key={index} className="flex flex-col sm:flex-row gap-4 mb-4">
                       <input 
                         required type="text" 
                         value={item.description} 
