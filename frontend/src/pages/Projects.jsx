@@ -137,9 +137,9 @@ export default function Projects() {
           }
         />
       ) : (
-        <div className="glass-card overflow-x-auto">
-          <div className="p-0 min-w-[700px]">
-            <div className="flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
+        <div className="glass-card">
+          <div className="p-0 min-w-full md:min-w-[700px]">
+            <div className="hidden md:flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
               <div className="w-1/3">Project</div>
               <div className="w-1/3">Client</div>
               <div className="w-1/3 text-right">Description</div>
@@ -154,16 +154,19 @@ export default function Projects() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                 >
-                  <Link to={`/projects/${project.id}`} className="list-row group flex p-5 items-center hover:bg-slate-50 transition-colors">
-                    <div className="w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                       <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                  <Link to={`/projects/${project.id}`} className="list-row group flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center hover:bg-slate-50 transition-colors gap-2 md:gap-0">
+                    <div className="w-full md:w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                       <div className="hidden md:block w-2 h-2 rounded-full bg-indigo-500"></div>
+                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2">Project</span>
                        {project.name}
                     </div>
-                    <div className="w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    <div className="w-full md:w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center md:block">
+                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-20">Client</span>
                        {project.clientName}
                     </div>
-                    <div className="w-1/3 text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide truncate pr-4 text-right">
-                       {project.description || '-'}
+                    <div className="w-full md:w-1/3 text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide truncate md:pr-4 md:text-right flex items-center md:block pt-2 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-700 mt-2 md:mt-0">
+                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-20">Desc</span>
+                       <span className="truncate">{project.description || '-'}</span>
                     </div>
                   </Link>
                 </motion.div>
