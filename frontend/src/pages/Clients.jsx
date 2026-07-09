@@ -131,9 +131,9 @@ export default function Clients() {
           }
         />
       ) : (
-        <div className="glass-card overflow-x-auto bg-white">
-          <div className="p-0 min-w-[700px]">
-            <div className="flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
+        <div className="glass-card bg-white">
+          <div className="p-0 min-w-full md:min-w-[700px]">
+            <div className="hidden md:flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
               <div className="w-1/3">Client</div>
               <div className="w-1/3">Contact</div>
               <div className="w-1/3">Projects</div>
@@ -147,18 +147,20 @@ export default function Clients() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="list-row group flex p-5 items-center bg-white hover:bg-slate-50 transition-colors"
+                  className="list-row group flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center bg-white hover:bg-slate-50 transition-colors gap-2 md:gap-0"
                 >
-                  <div className="w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                     <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-100 dark:border-indigo-800/50">
+                  <div className="w-full md:w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                     <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-100 dark:border-indigo-800/50 shrink-0">
                         {client.name.substring(0, 2).toUpperCase()}
                      </div>
-                     {client.name}
+                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-1">Client</span>
+                     <span className="truncate">{client.name}</span>
                   </div>
-                  <div className="w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <div className="w-full md:w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center md:block ml-11 md:ml-0">
+                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-16">Contact</span>
                      {client.email}
                   </div>
-                  <div className="w-1/3 flex items-center">
+                  <div className="w-full md:w-1/3 flex flex-wrap items-center mt-3 md:mt-0 pt-3 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-700">
                      <span className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs font-bold inline-flex items-center gap-2">
                         {client.projects?.length || 0} Active
                      </span>
