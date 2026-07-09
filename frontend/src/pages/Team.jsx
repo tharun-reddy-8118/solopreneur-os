@@ -109,7 +109,7 @@ export default function Team() {
             Invite a new team member
           </h3>
           <form onSubmit={handleInvite} className="space-y-4">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <input 
                 type="text" 
                 placeholder="Full Name" 
