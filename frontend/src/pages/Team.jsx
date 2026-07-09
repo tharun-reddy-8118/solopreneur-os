@@ -147,9 +147,9 @@ export default function Team() {
         </div>
       )}
 
-      <div className="glass-card overflow-x-auto">
-        <div className="p-0 min-w-[700px]">
-          <div className="flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
+      <div className="glass-card">
+        <div className="p-0 min-w-full md:min-w-[700px]">
+          <div className="hidden md:flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
             <div className="w-[40%]">Member</div>
             <div className="w-[40%]">Email</div>
             <div className="w-[20%] text-right">Role</div>
@@ -164,24 +164,29 @@ export default function Team() {
                 const isSelf = member.id === currentUser?.id;
 
                 return (
-                  <div key={member.id} className="list-row group flex p-5 items-center bg-white dark:bg-slate-800 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <div className="w-[40%] flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm border border-slate-200 dark:border-slate-600 shadow-sm">
-                        {initials}
+                  <div key={member.id} className="list-row group flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center bg-white dark:bg-slate-800 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 gap-4 md:gap-0">
+                    <div className="w-full md:w-[40%] flex items-center justify-between md:justify-start gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm border border-slate-200 dark:border-slate-600 shadow-sm shrink-0">
+                          {initials}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            {member.name}
+                            {isSelf && <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full uppercase tracking-wider font-bold">You</span>}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                          {member.name}
-                          {isSelf && <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full uppercase tracking-wider font-bold">You</span>}
-                        </span>
-                      </div>
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Member</span>
                     </div>
                     
-                    <div className="w-[40%] text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    <div className="w-full md:w-[40%] text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center justify-between md:block ml-0 md:ml-0">
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase w-16">Email</span>
                       {member.email}
                     </div>
                     
-                    <div className="w-[20%] flex justify-end">
+                    <div className="w-full md:w-[20%] flex items-center justify-between md:justify-end pt-3 md:pt-0 mt-2 md:mt-0 border-t md:border-0 border-slate-100 dark:border-slate-700">
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase w-16">Role</span>
                       {isAdmin && !isSelf ? (
                         <div className="relative inline-block">
                           <select 
