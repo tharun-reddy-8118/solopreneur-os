@@ -103,15 +103,15 @@ export default function ClientPortal() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-8 flex gap-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col md:flex-row gap-4 md:gap-8">
         {/* Sidebar Nav */}
-        <aside className="w-64 shrink-0 space-y-2">
+        <aside className="w-full md:w-64 shrink-0 flex gap-2 md:block md:space-y-2 overflow-x-auto pb-2 md:pb-0">
           <PortalNav active={activeTab === 'projects'} onClick={() => setActiveTab('projects')} icon={<Layout size={20}/>} label="Projects" brandColor={brandColor} />
           <PortalNav active={activeTab === 'invoices'} onClick={() => setActiveTab('invoices')} icon={<FileText size={20}/>} label="Invoices" brandColor={brandColor} />
         </aside>
 
         {/* Content Area */}
-        <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 min-h-[600px]">
+        <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-8 min-h-[600px]">
           
           {activeTab === 'invoices' && (
             <div>
@@ -121,20 +121,25 @@ export default function ClientPortal() {
               ) : (
                 <div className="space-y-4">
                   {client.invoices.map(inv => (
-                    <div key={inv.id} className="flex items-center justify-between p-5 border border-slate-100 dark:border-slate-700 rounded-xl hover:shadow-md transition-shadow bg-white dark:bg-slate-800/50">
+                    <div key={inv.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 border border-slate-100 dark:border-slate-700 rounded-xl hover:shadow-md transition-shadow bg-white dark:bg-slate-800/50 gap-4 md:gap-0">
                       <div>
-                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">Invoice #{inv.id}</h3>
+                        <div className="flex justify-between md:block mb-2 md:mb-0">
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-white">Invoice #{inv.id}</h3>
+                          <span className={`md:hidden text-xs font-bold uppercase tracking-wider px-2 py-1 rounded ${inv.status === 'Paid' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
+                            {inv.status}
+                          </span>
+                        </div>
                         <p className="text-slate-500 dark:text-slate-400 text-sm">Issued: {new Date(inv.createdAt).toLocaleDateString()}</p>
                       </div>
-                      <div className="text-right flex items-center gap-6">
-                        <div>
+                      <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-0 border-slate-100 dark:border-slate-700 pt-4 md:pt-0">
+                        <div className="flex md:block items-center gap-4 md:gap-0">
                           <p className="font-black text-xl text-slate-900 dark:text-white">{symbol}{inv.amount.toFixed(2)}</p>
-                          <span className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded ${inv.status === 'Paid' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
+                          <span className={`hidden md:inline-block text-xs font-bold uppercase tracking-wider px-2 py-1 rounded mt-1 ${inv.status === 'Paid' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
                             {inv.status}
                           </span>
                         </div>
                         {inv.status !== 'Paid' && (
-                          <button style={{ backgroundColor: brandColor }} className="text-white px-6 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 transition-opacity">
+                          <button style={{ backgroundColor: brandColor }} className="text-white px-6 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">
                             Pay Now
                           </button>
                         )}
@@ -156,7 +161,7 @@ export default function ClientPortal() {
                   {client.projects.map(project => (
                     <div key={project.id}>
                       <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-4 mb-6">{project.name}</h3>
-                      <div className="grid grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {['todo', 'in_progress', 'done'].map(status => (
                           <div key={status} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 min-h-[300px]">
                             <h4 className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-xs mb-4">
@@ -197,10 +202,10 @@ function PortalNav({ active, onClick, icon, label, brandColor }) {
         backgroundColor: active ? `${brandColor}15` : 'transparent',
         color: active ? brandColor : undefined
       }}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all hover:bg-slate-100 dark:hover:bg-slate-800 ${active ? 'shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
+      className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-xl font-bold transition-all hover:bg-slate-100 dark:hover:bg-slate-800 whitespace-nowrap ${active ? 'shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
     >
       {icon}
-      <span>{label}</span>
+      <span className="text-sm md:text-base">{label}</span>
     </button>
   );
 }
