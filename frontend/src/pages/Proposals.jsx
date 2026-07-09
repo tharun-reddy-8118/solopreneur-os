@@ -194,14 +194,14 @@ export default function Proposals() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="border border-slate-200 dark:border-slate-700 rounded-xl p-5 flex items-center justify-between hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-colors bg-slate-50/50 dark:bg-slate-800/50"
+                  className="border border-slate-200 dark:border-slate-700 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-colors bg-slate-50/50 dark:bg-slate-800/50"
                 >
                   <div>
                     <h4 className="text-lg font-bold text-slate-900 dark:text-white">{prop.title}</h4>
                     <p className="text-sm text-slate-500 dark:text-slate-400">For: <span className="font-semibold text-slate-700 dark:text-slate-300">{prop.client.name}</span> • {new Date(prop.createdAt).toLocaleDateString()}</p>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-xl truncate">{prop.description}</p>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       prop.status === 'Accepted' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
                       prop.status === 'Sent' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
@@ -211,7 +211,7 @@ export default function Proposals() {
                     </span>
                     
                     {prop.status === 'Draft' && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button onClick={() => handlePreview(prop.id)} disabled={previewResult.fetching} className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
                           {previewResult.fetching ? <Loader2 size={14} className="animate-spin inline" /> : 'Preview'}
                         </button>
