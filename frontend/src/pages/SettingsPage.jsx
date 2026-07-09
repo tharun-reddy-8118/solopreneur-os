@@ -136,7 +136,7 @@ export default function SettingsPage() {
       </header>
 
       {/* Tabs */}
-      <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl mb-8">
+      <div className="flex flex-col md:flex-row gap-2 md:gap-0 md:space-x-1 bg-slate-100 p-1 rounded-xl mb-8">
         <TabButton active={activeTab === 'general'} onClick={() => setActiveTab('general')} icon={<User size={18} />} label="General" />
         <TabButton active={activeTab === 'branding'} onClick={() => setActiveTab('branding')} icon={<PaintBucket size={18} />} label="Branding & Portal" />
         <TabButton active={activeTab === 'developer'} onClick={() => setActiveTab('developer')} icon={<Code size={18} />} label="Developer" />
@@ -213,9 +213,9 @@ export default function SettingsPage() {
               API Keys
             </h3>
 
-            <form onSubmit={handleGenerateKey} className="flex gap-4 mb-8">
+            <form onSubmit={handleGenerateKey} className="flex flex-col sm:flex-row gap-4 mb-8">
               <input type="text" placeholder="Key name (e.g. Zapier)" value={newKeyName} onChange={e => setNewKeyName(e.target.value)} className="glass-input flex-1 min-w-0" required />
-              <button type="submit" className="btn-primary flex items-center gap-2 whitespace-nowrap px-4 py-3 text-sm">
+              <button type="submit" className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm">
                 <Plus size={18} /> Generate Key
               </button>
             </form>
@@ -251,16 +251,16 @@ export default function SettingsPage() {
               Webhooks
             </h3>
 
-            <form onSubmit={handleAddWebhook} className="flex gap-4 mb-8">
+            <form onSubmit={handleAddWebhook} className="flex flex-col md:flex-row gap-4 mb-8">
               <input type="url" placeholder="https://webhook.site/..." value={newWebhookUrl} onChange={e => setNewWebhookUrl(e.target.value)} className="glass-input flex-1 min-w-0" required />
-              <select value={newWebhookEvent} onChange={e => setNewWebhookEvent(e.target.value)} className="glass-input" style={{ width: '12rem', flexShrink: 0 }}>
+              <select value={newWebhookEvent} onChange={e => setNewWebhookEvent(e.target.value)} className="glass-input w-full md:w-48 shrink-0">
                 <option value="*">All Events (*)</option>
                 <option value="invoice.created">Invoice Created</option>
                 <option value="invoice.send">Invoice Sent via Zapier</option>
                 <option value="proposal.send">Proposal Sent via Zapier</option>
                 <option value="task.updated">Task Updated</option>
               </select>
-              <button type="submit" className="btn-primary flex items-center gap-2 whitespace-nowrap px-4 py-3 text-sm">
+              <button type="submit" className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm">
                 <Plus size={18} /> Add Webhook
               </button>
             </form>
