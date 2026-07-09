@@ -54,33 +54,36 @@ export default function Timesheets() {
               <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-6">Go to a Project Board and click on a Task to start logging your billable hours.</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200/60 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
-                  <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                  <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Project / Task</th>
-                  <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</th>
-                  <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Duration</th>
-                  <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            <div className="w-full">
+              <div className="hidden md:flex border-b border-slate-200/60 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="py-4 px-6 w-1/5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</div>
+                <div className="py-4 px-6 w-1/4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Project / Task</div>
+                <div className="py-4 px-6 w-1/4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</div>
+                <div className="py-4 px-6 w-[15%] text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Duration</div>
+                <div className="py-4 px-6 w-[15%] text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Status</div>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-700">
                 {data?.recentTimeLogs?.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
-                    <td className="py-4 px-6 text-sm text-slate-500 dark:text-slate-400">
+                  <div key={log.id} className="group flex flex-col md:flex-row items-start md:items-center p-4 md:p-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors gap-2 md:gap-0">
+                    <div className="py-1 md:py-4 md:px-6 w-full md:w-1/5 text-sm text-slate-500 dark:text-slate-400 flex items-center justify-between md:block">
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Date</span>
                       {new Date(log.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-6">
+                    </div>
+                    <div className="py-1 md:py-4 md:px-6 w-full md:w-1/4 flex flex-col">
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase mb-1">Project / Task</span>
                       <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{log.task.project.name}</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">{log.task.title}</div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                    </div>
+                    <div className="py-1 md:py-4 md:px-6 w-full md:w-1/4 text-sm text-slate-600 dark:text-slate-300 md:max-w-xs md:truncate flex flex-col">
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase mb-1">Description</span>
                       {log.description}
-                    </td>
-                    <td className="py-4 px-6 text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {Math.floor(log.durationMinutes / 60)}h {log.durationMinutes % 60}m
-                    </td>
-                    <td className="py-4 px-6 text-right">
+                    </div>
+                    <div className="py-1 md:py-4 md:px-6 w-full md:w-[15%] text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center justify-between md:block pt-3 md:pt-4 border-t md:border-0 border-slate-100 dark:border-slate-700 mt-2 md:mt-0">
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Duration</span>
+                      <span>{Math.floor(log.durationMinutes / 60)}h {log.durationMinutes % 60}m</span>
+                    </div>
+                    <div className="py-1 md:py-4 md:px-6 w-full md:w-[15%] flex items-center justify-between md:justify-end">
+                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Status</span>
                       {log.isBilled ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50">
                           Billed
@@ -90,11 +93,11 @@ export default function Timesheets() {
                           Unbilled
                         </span>
                       )}
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           )}
         </div>
       )}
