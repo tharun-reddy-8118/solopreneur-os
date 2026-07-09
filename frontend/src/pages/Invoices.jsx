@@ -173,7 +173,7 @@ export default function Invoices() {
             Draft Invoice
           </h3>
           <form onSubmit={handleAddInvoice} className="space-y-6">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <select 
                 value={clientId} 
                 onChange={e => {
@@ -213,7 +213,7 @@ export default function Invoices() {
               
               <div className="space-y-3">
                 {lineItems.map((item, index) => (
-                  <div key={index} className="flex gap-3 items-center group">
+                  <div key={index} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center group">
                     <input 
                       type="text" 
                       placeholder="Description" 
