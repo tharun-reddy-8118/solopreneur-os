@@ -136,7 +136,7 @@ function App() {
 
 function Sidebar({ handleLogout, isDarkMode, setIsDarkMode, onClose }) {
   return (
-    <aside className="w-full glass-sidebar border-r border-slate-200/60 dark:border-slate-700/50 flex flex-col h-full shrink-0 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] relative transition-all duration-300 bg-white/40 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl md:rounded-none md:rounded-l-2xl">
+    <aside className="w-full glass-sidebar border-r border-slate-200/60 dark:border-slate-700/50 flex flex-col h-full shrink-0 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] relative transition-all duration-300 bg-white/95 md:bg-white/40 dark:bg-slate-900/95 md:dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl md:rounded-none md:rounded-l-2xl">
       <div className="p-6 pb-2 flex justify-between items-center">
         <div className="flex items-center gap-3 mb-4 md:mb-8 px-2">
           <img src="/logo.png" alt="SolopreneurOS Logo" className="h-8 w-8 object-contain drop-shadow-sm" />
