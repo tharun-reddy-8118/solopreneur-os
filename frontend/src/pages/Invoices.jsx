@@ -316,7 +316,7 @@ export default function Invoices() {
                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Amount</span>
                      <span className="font-bold text-slate-900 dark:text-white tracking-wide text-lg">{currencySymbol}{invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="w-full md:w-[15%] flex justify-between md:justify-end items-center md:block">
+                  <div className="w-full md:w-[15%] flex justify-between md:justify-end items-center md:flex">
                      <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Status</span>
                      <select 
                         value={invoice.status}
