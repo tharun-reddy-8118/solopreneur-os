@@ -283,9 +283,9 @@ export default function Invoices() {
           }
         />
       ) : (
-        <div className="glass-card overflow-x-auto">
-          <div className="p-0 min-w-[800px]">
-            <div className="flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
+        <div className="glass-card">
+          <div className="p-0 min-w-full md:min-w-[800px]">
+            <div className="hidden md:flex text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest p-5 border-b border-slate-100 dark:border-slate-700 bg-transparent">
               <div className="w-[20%]">Invoice ID</div>
               <div className="w-[30%]">Client & Project</div>
               <div className="w-[20%]">Amount</div>
@@ -301,19 +301,23 @@ export default function Invoices() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="list-row group flex p-5 items-center bg-white dark:bg-slate-800"
+                  className="list-row group flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center bg-white dark:bg-slate-800 gap-4 md:gap-0"
                 >
-                  <div className="w-[20%] font-mono text-indigo-600 dark:text-indigo-400 font-bold">
-                     INV-{invoice.id.toString().padStart(4, '0')}
+                  <div className="w-full md:w-[20%] flex justify-between items-center md:block">
+                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Invoice ID</span>
+                     <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">INV-{invoice.id.toString().padStart(4, '0')}</span>
                   </div>
-                  <div className="w-[30%] flex flex-col">
+                  <div className="w-full md:w-[30%] flex flex-col">
+                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase mb-1">Client & Project</span>
                      <span className="font-bold text-slate-900 dark:text-white">{invoice.clientName}</span>
                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">{invoice.projectName}</span>
                   </div>
-                  <div className="w-[20%] font-bold text-slate-900 dark:text-white tracking-wide text-lg">
-                     {currencySymbol}{invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <div className="w-full md:w-[20%] flex justify-between items-center md:block">
+                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Amount</span>
+                     <span className="font-bold text-slate-900 dark:text-white tracking-wide text-lg">{currencySymbol}{invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="w-[15%] flex justify-end">
+                  <div className="w-full md:w-[15%] flex justify-between md:justify-end items-center md:block">
+                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase">Status</span>
                      <select 
                         value={invoice.status}
                         onChange={(e) => handleUpdateStatus(invoice.id, e.target.value)}
@@ -331,7 +335,7 @@ export default function Invoices() {
                         <option value="Overdue">Overdue</option>
                      </select>
                   </div>
-                  <div className="w-[15%] flex justify-end">
+                  <div className="w-full md:w-[15%] flex justify-end pt-2 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-700">
                     <button 
                       onClick={() => handleDownloadPdf(invoice.id)}
                       className="p-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors border border-indigo-200 dark:border-indigo-800/50 shadow-sm flex items-center gap-2"
