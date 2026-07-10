@@ -14,6 +14,15 @@ const LOGIN_MUTATION = gql`
 const REGISTER_MUTATION = gql`
   mutation Register($email: String!, $password: String!, $name: String!, $orgName: String!) {
     register(email: $email, password: $password, name: $name, orgName: $orgName) {
+      success
+      message
+    }
+  }
+`;
+
+const VERIFY_OTP_MUTATION = gql`
+  mutation VerifyOtp($email: String!, $otp: String!) {
+    verifyOtp(email: $email, otp: $otp) {
       accessToken
       tokenType
     }
@@ -24,30 +33,45 @@ export default function Auth({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
   const [orgName, setOrgName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const [loginResult, executeLogin] = useMutation(LOGIN_MUTATION);
   const [registerResult, executeRegister] = useMutation(REGISTER_MUTATION);
+  const [verifyOtpResult, executeVerifyOtp] = useMutation(VERIFY_OTP_MUTATION);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
     
+    if (isVerifyingOtp) {
+      const { data, error } = await executeVerifyOtp({ email, otp });
+      if (error) setErrorMsg(error.message.replace('[GraphQL] ', ''));
+      else if (data?.verifyOtp?.accessToken) onLogin(data.verifyOtp.accessToken);
+      return;
+    }
+
     if (isLogin) {
       const { data, error } = await executeLogin({ email, password });
-      if (error) setErrorMsg('Invalid email or password.');
+      if (error) setErrorMsg(error.message.replace('[GraphQL] ', ''));
       else if (data?.login?.accessToken) onLogin(data.login.accessToken);
     } else {
       if (!name || !orgName) { setErrorMsg('Name and Organization Name are required.'); return; }
       const { data, error } = await executeRegister({ email, password, name, orgName });
       if (error) setErrorMsg(error.message.replace('[GraphQL] ', ''));
-      else if (data?.register?.accessToken) onLogin(data.register.accessToken);
+      else if (data?.register?.success) {
+        setSuccessMsg(data.register.message);
+        setIsVerifyingOtp(true);
+      }
     }
   };
 
-  const fetching = loginResult.fetching || registerResult.fetching;
+  const fetching = loginResult.fetching || registerResult.fetching || verifyOtpResult.fetching;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 relative overflow-hidden">
@@ -70,57 +94,80 @@ export default function Auth({ onLogin }) {
           </div>
         )}
 
+        {successMsg && (
+          <div className="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/30 border border-green-100 dark:border-green-800/50 text-sm font-bold text-green-600 dark:text-green-400 text-center">
+            {successMsg}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
-          {!isLogin && (
+          {isVerifyingOtp ? (
+            <div>
+              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Enter OTP</label>
+              <input 
+                type="text" 
+                placeholder="123456" 
+                value={otp}
+                onChange={e => setOtp(e.target.value)}
+                className="glass-input text-center text-2xl tracking-[0.5em] font-mono"
+                maxLength={6}
+                required
+              />
+            </div>
+          ) : (
             <>
+              {!isLogin && (
+                <>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="John Doe" 
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      className="glass-input"
+                      required={!isLogin}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Organization Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="Acme Corp" 
+                      value={orgName}
+                      onChange={e => setOrgName(e.target.value)}
+                      className="glass-input"
+                      required={!isLogin}
+                    />
+                  </div>
+                </>
+              )}
+              
               <div>
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Email</label>
                 <input 
-                  type="text" 
-                  placeholder="John Doe" 
-                  value={name}
-                  onChange={e => setName(e.target.value)}
+                  type="email" 
+                  placeholder="you@example.com" 
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   className="glass-input"
-                  required={!isLogin}
+                  required
                 />
               </div>
+              
               <div>
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Organization Name</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Password</label>
                 <input 
-                  type="text" 
-                  placeholder="Acme Corp" 
-                  value={orgName}
-                  onChange={e => setOrgName(e.target.value)}
+                  type="password" 
+                  placeholder="••••••••" 
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                   className="glass-input"
-                  required={!isLogin}
+                  required
                 />
               </div>
             </>
           )}
-          
-          <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Email</label>
-            <input 
-              type="email" 
-              placeholder="you@example.com" 
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="glass-input"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="glass-input"
-              required
-            />
-          </div>
 
           <button 
             type="submit" 
@@ -129,24 +176,26 @@ export default function Auth({ onLogin }) {
           >
             {fetching ? <Loader2 className="animate-spin" size={20} /> : (
               <>
-                {isLogin ? 'Sign In' : 'Create Account'}
+                {isVerifyingOtp ? 'Verify OTP' : (isLogin ? 'Sign In' : 'Create Account')}
                 <ArrowRight size={20} />
               </>
             )}
           </button>
         </form>
 
-        <div className="mt-8 text-center border-t border-slate-100 dark:border-slate-700 pt-6">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
-            <button 
-              onClick={() => setIsLogin(!isLogin)} 
-              className="ml-2 font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-            >
-              {isLogin ? 'Sign up' : 'Log in'}
-            </button>
-          </p>
-        </div>
+        {!isVerifyingOtp && (
+          <div className="mt-8 text-center border-t border-slate-100 dark:border-slate-700 pt-6">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              <button 
+                onClick={() => setIsLogin(!isLogin)} 
+                className="ml-2 font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+              >
+                {isLogin ? 'Sign up' : 'Log in'}
+              </button>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
