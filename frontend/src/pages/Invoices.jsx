@@ -229,7 +229,8 @@ export default function Invoices() {
                         min="0.1" step="0.1"
                         value={item.quantity}
                         onChange={e => updateLineItem(index, 'quantity', parseFloat(e.target.value))}
-                        className="glass-input w-full pr-8"
+                        className="glass-input w-full"
+                        style={{ paddingRight: '2.5rem' }}
                         required
                       />
                     </div>
@@ -241,7 +242,8 @@ export default function Invoices() {
                         placeholder="Price"
                         value={item.unitPrice}
                         onChange={e => updateLineItem(index, 'unitPrice', parseFloat(e.target.value))}
-                        className="glass-input w-full pl-8"
+                        className="glass-input w-full"
+                        style={{ paddingLeft: '2rem' }}
                         required
                       />
                     </div>
