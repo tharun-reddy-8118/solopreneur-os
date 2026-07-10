@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, gql } from 'urql';
 import { Link } from 'react-router-dom';
-import { Loader2, Folder, Briefcase } from 'lucide-react';
+import { Loader2, Folder, Briefcase, Edit2, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import EmptyState from '../components/EmptyState';
 
@@ -29,16 +29,30 @@ const ADD_PROJECT = gql`
   }
 `;
 
+const UPDATE_PROJECT = gql`
+  mutation UpdateProject($projectId: Int!, $name: String!, $description: String!) {
+    updateProject(projectId: $projectId, name: $name, description: $description) {
+      id
+      name
+      description
+    }
+  }
+`;
+
 export default function Projects() {
   const [result, reexecuteQuery] = useQuery({ query: GET_PROJECTS_AND_CLIENTS });
   const { data, fetching, error } = result;
 
   const [addResult, executeAdd] = useMutation(ADD_PROJECT);
+  const [updateResult, executeUpdate] = useMutation(UPDATE_PROJECT);
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDesc, setNewProjectDesc] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
+
+  const [editingProjectId, setEditingProjectId] = useState(null);
+  const [editProjectData, setEditProjectData] = useState({ name: '', description: '' });
 
   const handleAddProject = async (e) => {
     e.preventDefault();
@@ -54,6 +68,35 @@ export default function Projects() {
     setNewProjectDesc('');
     setSelectedClientId('');
     setShowAddForm(false);
+    reexecuteQuery({ requestPolicy: 'network-only' });
+  };
+
+  const startEditing = (e, project) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingProjectId(project.id);
+    setEditProjectData({ name: project.name, description: project.description || '' });
+  };
+
+  const cancelEditing = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingProjectId(null);
+    setEditProjectData({ name: '', description: '' });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!editProjectData.name) return;
+    
+    await executeUpdate({
+      projectId: parseInt(editingProjectId),
+      name: editProjectData.name,
+      description: editProjectData.description
+    });
+    
+    setEditingProjectId(null);
     reexecuteQuery({ requestPolicy: 'network-only' });
   };
 
@@ -153,22 +196,67 @@ export default function Projects() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
+                  className="relative group"
                 >
-                  <Link to={`/projects/${project.id}`} className="list-row group flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center hover:bg-slate-50 transition-colors gap-2 md:gap-0">
-                    <div className="w-full md:w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                       <div className="hidden md:block w-2 h-2 rounded-full bg-indigo-500"></div>
-                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2">Project</span>
-                       {project.name}
+                  {editingProjectId === project.id ? (
+                    <div className="list-row p-4 md:p-5 items-center bg-white">
+                      <form onSubmit={handleUpdate} className="flex flex-col md:flex-row w-full gap-4 items-center">
+                        <div className="w-full md:w-1/3">
+                          <input 
+                            type="text" 
+                            value={editProjectData.name}
+                            onChange={e => setEditProjectData({...editProjectData, name: e.target.value})}
+                            className="glass-input w-full" 
+                            required
+                          />
+                        </div>
+                        <div className="w-full md:w-1/3 text-sm text-slate-500 font-medium">
+                           {project.clientName} (Client cannot be changed)
+                        </div>
+                        <div className="w-full md:w-1/3 flex items-center justify-end gap-2">
+                          <input 
+                            type="text" 
+                            value={editProjectData.description}
+                            onChange={e => setEditProjectData({...editProjectData, description: e.target.value})}
+                            className="glass-input w-full md:w-2/3 mr-2" 
+                            placeholder="Description"
+                          />
+                          <button type="button" onClick={cancelEditing} className="p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-lg bg-slate-100 hover:bg-slate-200">
+                            <X size={16} />
+                          </button>
+                          <button type="submit" disabled={updateResult.fetching} className="p-2 text-white bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-lg">
+                            {updateResult.fetching ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                          </button>
+                        </div>
+                      </form>
                     </div>
-                    <div className="w-full md:w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center md:block">
-                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-20">Client</span>
-                       {project.clientName}
-                    </div>
-                    <div className="w-full md:w-1/3 text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide truncate md:pr-4 md:text-right flex items-center md:block pt-2 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-700 mt-2 md:mt-0">
-                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-20">Desc</span>
-                       <span className="truncate">{project.description || '-'}</span>
-                    </div>
-                  </Link>
+                  ) : (
+                    <Link to={`/projects/${project.id}`} className="list-row flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center hover:bg-slate-50 transition-colors gap-2 md:gap-0 pr-12">
+                      <div className="w-full md:w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3 pr-8">
+                         <div className="hidden md:block w-2 h-2 rounded-full bg-indigo-500 shrink-0"></div>
+                         <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2">Project</span>
+                         <span className="truncate">{project.name}</span>
+                      </div>
+                      <div className="w-full md:w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center md:block ml-11 md:ml-0">
+                         <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-20">Client</span>
+                         <span className="truncate">{project.clientName}</span>
+                      </div>
+                      <div className="w-full md:w-1/3 text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide truncate md:pr-4 md:text-right flex items-center md:block pt-2 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-700 mt-2 md:mt-0">
+                         <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-20">Desc</span>
+                         <span className="truncate">{project.description || '-'}</span>
+                      </div>
+                      
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={(e) => startEditing(e, project)}
+                          className="p-2 text-slate-400 hover:text-indigo-600 bg-white shadow-sm border border-slate-100 rounded-lg hover:shadow-md transition-all"
+                          title="Edit Project"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      </div>
+                    </Link>
+                  )}
                 </motion.div>
               ))}
             </div>
