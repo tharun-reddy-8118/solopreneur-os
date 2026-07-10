@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, gql } from 'urql';
-import { Loader2, Sparkles, Users } from 'lucide-react';
+import { Loader2, Sparkles, Users, Edit2, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import EmptyState from '../components/EmptyState';
@@ -29,13 +29,27 @@ const ADD_CLIENT = gql`
   }
 `;
 
+const UPDATE_CLIENT = gql`
+  mutation UpdateClient($clientId: Int!, $name: String!, $email: String!) {
+    updateClient(clientId: $clientId, name: $name, email: $email) {
+      id
+      name
+      email
+    }
+  }
+`;
+
 export default function Clients() {
   const [result, reexecuteQuery] = useQuery({ query: GET_CLIENTS });
   const { data, fetching, error } = result;
   
   const [addClientResult, executeAddClient] = useMutation(ADD_CLIENT);
+  const [updateClientResult, executeUpdateClient] = useMutation(UPDATE_CLIENT);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '' });
+  
+  const [editingClientId, setEditingClientId] = useState(null);
+  const [editFormData, setEditFormData] = useState({ name: '', email: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,6 +58,30 @@ export default function Clients() {
     await executeAddClient(formData);
     setFormData({ name: '', email: '' });
     setIsAdding(false);
+    reexecuteQuery({ requestPolicy: 'network-only' });
+  };
+
+  const startEditing = (client) => {
+    setEditingClientId(client.id);
+    setEditFormData({ name: client.name, email: client.email });
+  };
+
+  const cancelEditing = () => {
+    setEditingClientId(null);
+    setEditFormData({ name: '', email: '' });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!editFormData.name || !editFormData.email) return;
+    
+    await executeUpdateClient({
+      clientId: parseInt(editingClientId),
+      name: editFormData.name,
+      email: editFormData.email
+    });
+    
+    setEditingClientId(null);
     reexecuteQuery({ requestPolicy: 'network-only' });
   };
 
@@ -147,36 +185,82 @@ export default function Clients() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="list-row group flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center bg-white hover:bg-slate-50 transition-colors gap-2 md:gap-0"
+                  className="list-row group flex flex-col md:flex-row p-4 md:p-5 items-start md:items-center bg-white hover:bg-slate-50 transition-colors gap-2 md:gap-0 relative"
                 >
-                  <div className="w-full md:w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                     <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-100 dark:border-indigo-800/50 shrink-0">
-                        {client.name.substring(0, 2).toUpperCase()}
-                     </div>
-                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-1">Client</span>
-                     <span className="truncate">{client.name}</span>
-                  </div>
-                  <div className="w-full md:w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center md:block ml-11 md:ml-0">
-                     <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-16">Contact</span>
-                     {client.email}
-                  </div>
-                  <div className="w-full md:w-1/3 flex flex-wrap items-center mt-3 md:mt-0 pt-3 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-700">
-                     <span className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs font-bold inline-flex items-center gap-2">
-                        {client.projects?.length || 0} Active
-                     </span>
-                     {client.portalToken && (
-                        <button 
-                          onClick={() => {
-                            const url = `${window.location.origin}/portal/${client.portalToken}`;
-                            navigator.clipboard.writeText(url);
-                            toast.success('Portal link copied to clipboard!');
-                          }}
-                          className="ml-4 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline"
-                        >
-                          Copy Portal Link
+                  {editingClientId === client.id ? (
+                    <form onSubmit={handleUpdate} className="flex flex-col md:flex-row w-full gap-4 items-center">
+                      <div className="w-full md:w-1/3">
+                        <input 
+                          type="text" 
+                          value={editFormData.name}
+                          onChange={e => setEditFormData({...editFormData, name: e.target.value})}
+                          className="glass-input w-full" 
+                          required
+                        />
+                      </div>
+                      <div className="w-full md:w-1/3">
+                        <input 
+                          type="email" 
+                          value={editFormData.email}
+                          onChange={e => setEditFormData({...editFormData, email: e.target.value})}
+                          className="glass-input w-full" 
+                          required
+                        />
+                      </div>
+                      <div className="w-full md:w-1/3 flex items-center justify-end gap-2">
+                        <button type="button" onClick={cancelEditing} className="p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-lg bg-slate-100 hover:bg-slate-200">
+                          <X size={16} />
                         </button>
-                     )}
-                  </div>
+                        <button type="submit" disabled={updateClientResult.fetching} className="p-2 text-white bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-lg">
+                          {updateClientResult.fetching ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="w-full md:w-1/3 font-bold text-slate-900 dark:text-white flex items-center gap-3 pr-8">
+                         <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-100 dark:border-indigo-800/50 shrink-0">
+                            {client.name.substring(0, 2).toUpperCase()}
+                         </div>
+                         <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-1">Client</span>
+                         <span className="truncate">{client.name}</span>
+                      </div>
+                      <div className="w-full md:w-1/3 text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center md:block ml-11 md:ml-0">
+                         <span className="md:hidden text-xs text-slate-500 font-bold uppercase mr-2 w-16">Contact</span>
+                         {client.email}
+                      </div>
+                      <div className="w-full md:w-1/3 flex flex-wrap items-center mt-3 md:mt-0 pt-3 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-700 justify-between pr-2">
+                         <div className="flex items-center gap-4">
+                           <span className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs font-bold inline-flex items-center gap-2">
+                              {client.projects?.length || 0} Active
+                           </span>
+                           {client.portalToken && (
+                              <button 
+                                onClick={() => {
+                                  const url = `${window.location.origin}/portal/${client.portalToken}`;
+                                  navigator.clipboard.writeText(url);
+                                  toast.success('Portal link copied to clipboard!');
+                                }}
+                                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline"
+                              >
+                                Copy Portal Link
+                              </button>
+                           )}
+                         </div>
+                      </div>
+                      
+                      {/* Edit Button overlay on hover for desktop, always visible on mobile */}
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => startEditing(client)}
+                          className="p-2 text-slate-400 hover:text-indigo-600 bg-white shadow-sm border border-slate-100 rounded-lg hover:shadow-md transition-all"
+                          title="Edit Client"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </motion.div>
               ))}
             </div>
