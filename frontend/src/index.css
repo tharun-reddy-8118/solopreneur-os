@@ -3,6 +3,12 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
   body {
     @apply bg-slate-50 text-slate-900 antialiased font-sans dark:bg-slate-900 dark:text-slate-100;
     background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
@@ -10,6 +16,9 @@
   }
   .dark body {
     background-image: radial-gradient(#1e293b 1px, transparent 1px);
+  }
+  option {
+    @apply bg-white text-slate-900 dark:bg-slate-800 dark:text-white;
   }
 }
 
