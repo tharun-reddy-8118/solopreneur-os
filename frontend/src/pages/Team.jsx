@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, gql } from 'urql';
-import { Loader2, Users, Shield, User, Mail, ChevronDown } from 'lucide-react';
+import { Loader2, Users, Shield, User, Mail, ChevronDown, Trash2 } from 'lucide-react';
 
 const GET_TEAM = gql`
   query GetTeam {
@@ -37,12 +37,19 @@ const UPDATE_ROLE = gql`
   }
 `;
 
+const DELETE_MEMBER = gql`
+  mutation DeleteMember($userId: Int!) {
+    deleteTeamMember(userId: $userId)
+  }
+`;
+
 export default function Team() {
   const [result, reexecuteQuery] = useQuery({ query: GET_TEAM });
   const { data, fetching, error } = result;
 
   const [inviteResult, executeInvite] = useMutation(INVITE_MEMBER);
   const [updateRoleResult, executeUpdateRole] = useMutation(UPDATE_ROLE);
+  const [, executeDelete] = useMutation(DELETE_MEMBER);
   
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState('');
@@ -74,6 +81,14 @@ export default function Team() {
     if (!isAdmin) return;
     await executeUpdateRole({ userId, role: newRole });
     reexecuteQuery({ requestPolicy: 'network-only' });
+  };
+
+  const handleDelete = async (userId) => {
+    if (!isAdmin) return;
+    if (confirm('Are you sure you want to remove this team member?')) {
+      await executeDelete({ userId });
+      reexecuteQuery({ requestPolicy: 'network-only' });
+    }
   };
 
   if (fetching && !data) {
@@ -185,27 +200,36 @@ export default function Team() {
                       {member.email}
                     </div>
                     
-                    <div className="w-full md:w-[20%] flex items-center justify-between md:justify-end pt-3 md:pt-0 mt-2 md:mt-0 border-t md:border-0 border-slate-100 dark:border-slate-700">
+                    <div className="w-full md:w-[20%] flex items-center justify-between md:justify-end pt-3 md:pt-0 mt-2 md:mt-0 border-t md:border-0 border-slate-100 dark:border-slate-700 gap-2">
                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase w-16">Role</span>
                       {isAdmin && !isSelf ? (
-                        <div className="relative inline-block">
-                          <select 
-                            value={member.role}
-                            onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                            disabled={updateRoleResult.fetching}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-bold appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-sm transition-colors pl-8 pr-8 ${
-                              member.role === 'Admin' 
-                               ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/50' 
-                               : 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
-                            }`}
-                          >
-                            <option value="Member">Member</option>
-                            <option value="Admin">Admin</option>
-                          </select>
-                          <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                            {member.role === 'Admin' ? <Shield size={12} className="text-purple-600" /> : <User size={12} className="text-slate-500" />}
+                        <div className="flex items-center gap-2">
+                          <div className="relative inline-block">
+                            <select 
+                              value={member.role}
+                              onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                              disabled={updateRoleResult.fetching}
+                              className={`px-3 py-1.5 rounded-lg border text-xs font-bold appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-sm transition-colors pl-8 pr-8 ${
+                                member.role === 'Admin' 
+                                 ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/50' 
+                                 : 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                              }`}
+                            >
+                              <option value="Member">Member</option>
+                              <option value="Admin">Admin</option>
+                            </select>
+                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                              {member.role === 'Admin' ? <Shield size={12} className="text-purple-600" /> : <User size={12} className="text-slate-500" />}
+                            </div>
+                            <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                           </div>
-                          <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                          <button 
+                            onClick={() => handleDelete(member.id)}
+                            className="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                            title="Remove Member"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       ) : (
                         <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold shadow-sm ${
