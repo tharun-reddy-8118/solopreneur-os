@@ -256,8 +256,6 @@ export default function SettingsPage() {
               <select value={newWebhookEvent} onChange={e => setNewWebhookEvent(e.target.value)} className="glass-input w-full md:w-48 shrink-0">
                 <option value="*">All Events (*)</option>
                 <option value="invoice.created">Invoice Created</option>
-                <option value="invoice.send">Invoice Sent via Zapier</option>
-                <option value="proposal.send">Proposal Sent via Zapier</option>
                 <option value="task.updated">Task Updated</option>
               </select>
               <button type="submit" className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm">
