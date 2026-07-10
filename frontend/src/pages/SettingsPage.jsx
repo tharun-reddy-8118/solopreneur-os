@@ -252,13 +252,13 @@ export default function SettingsPage() {
             </h3>
 
             <form onSubmit={handleAddWebhook} className="flex flex-col sm:flex-row gap-4 mb-8">
-              <input type="url" placeholder="https://webhook.site/..." value={newWebhookUrl} onChange={e => setNewWebhookUrl(e.target.value)} className="glass-input flex-1 min-w-[200px]" required />
-              <select value={newWebhookEvent} onChange={e => setNewWebhookEvent(e.target.value)} className="glass-input w-full sm:w-auto shrink-0">
+              <input type="url" placeholder="https://webhook.site/..." value={newWebhookUrl} onChange={e => setNewWebhookUrl(e.target.value)} className="glass-input flex-[2] min-w-0" required />
+              <select value={newWebhookEvent} onChange={e => setNewWebhookEvent(e.target.value)} className="glass-input flex-1 min-w-0">
                 <option value="*">All Events (*)</option>
                 <option value="invoice.created">Invoice Created</option>
                 <option value="task.updated">Task Updated</option>
               </select>
-              <button type="submit" className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap px-6 py-3 text-sm shrink-0">
+              <button type="submit" className="btn-primary shrink-0 flex items-center justify-center gap-2 whitespace-nowrap px-6 py-3 text-sm">
                 <Plus size={18} /> Add Webhook
               </button>
             </form>
