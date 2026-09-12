@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, gql } from 'urql';
-import { Loader2, Users, Shield, User, Mail, ChevronDown, Trash2 } from 'lucide-react';
+import { Loader2, Users, Shield, User, Mail, ChevronDown, Trash2, UserPlus, Crown } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const GET_TEAM = gql`
   query GetTeam {
@@ -57,19 +58,26 @@ export default function Team() {
   const [newMemberRole, setNewMemberRole] = useState('Member');
 
   const currentUser = data?.me;
-  const isAdmin = currentUser?.role === 'Admin';
+  const isOwner = currentUser?.role === 'Owner';
+  const isAdmin = isOwner || currentUser?.role === 'Admin';
   const teamMembers = data?.teamMembers || [];
 
   const handleInvite = async (e) => {
     e.preventDefault();
     if (!newMemberEmail || !newMemberName) return;
     
-    await executeInvite({ 
+    const res = await executeInvite({ 
       email: newMemberEmail,
       name: newMemberName,
       role: newMemberRole
     });
-    
+
+    if (res.error) {
+      toast.error(res.error.message.replace(/\[GraphQL\]\s*/i, '') || 'Failed to invite team member');
+      return;
+    }
+
+    toast.success(`Invitation sent to ${newMemberEmail}!`);
     setNewMemberEmail('');
     setNewMemberName('');
     setNewMemberRole('Member');
@@ -79,14 +87,24 @@ export default function Team() {
 
   const handleRoleChange = async (userId, newRole) => {
     if (!isAdmin) return;
-    await executeUpdateRole({ userId, role: newRole });
+    const res = await executeUpdateRole({ userId, role: newRole });
+    if (res.error) {
+      toast.error(res.error.message.replace(/\[GraphQL\]\s*/i, '') || 'Failed to update role');
+      return;
+    }
+    toast.success('Role updated successfully');
     reexecuteQuery({ requestPolicy: 'network-only' });
   };
 
   const handleDelete = async (userId) => {
     if (!isAdmin) return;
     if (confirm('Are you sure you want to remove this team member?')) {
-      await executeDelete({ userId });
+      const res = await executeDelete({ userId });
+      if (res.error) {
+        toast.error(res.error.message.replace(/\[GraphQL\]\s*/i, '') || 'Failed to remove member');
+        return;
+      }
+      toast.success('Team member removed');
       reexecuteQuery({ requestPolicy: 'network-only' });
     }
   };
@@ -111,8 +129,8 @@ export default function Team() {
             onClick={() => setShowInviteForm(!showInviteForm)}
             className="btn-primary flex items-center gap-2"
           >
-            <Users size={18} />
-            {showInviteForm ? 'Cancel' : 'Invite Member'}
+            <UserPlus size={18} />
+            {showInviteForm ? 'Cancel' : 'Add New User'}
           </button>
         )}
       </header>
@@ -202,7 +220,7 @@ export default function Team() {
                     
                     <div className="w-full md:w-[20%] flex items-center justify-between md:justify-end pt-3 md:pt-0 mt-2 md:mt-0 border-t md:border-0 border-slate-100 dark:border-slate-700 gap-2">
                       <span className="md:hidden text-xs text-slate-500 font-bold uppercase w-16">Role</span>
-                      {isAdmin && !isSelf ? (
+                      {isAdmin && !isSelf && member.role !== 'Owner' ? (
                         <div className="flex items-center gap-2">
                           <div className="relative inline-block">
                             <select 
@@ -233,11 +251,19 @@ export default function Team() {
                         </div>
                       ) : (
                         <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold shadow-sm ${
-                          member.role === 'Admin' 
+                          member.role === 'Owner'
+                           ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800/50'
+                           : member.role === 'Admin' 
                            ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/50' 
                            : 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
                         }`}>
-                          {member.role === 'Admin' ? <Shield size={12} /> : <User size={12} />}
+                          {member.role === 'Owner' ? (
+                            <Crown size={12} className="text-amber-600 dark:text-amber-400" />
+                          ) : member.role === 'Admin' ? (
+                            <Shield size={12} />
+                          ) : (
+                            <User size={12} />
+                          )}
                           {member.role}
                         </div>
                       )}

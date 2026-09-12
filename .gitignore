@@ -1,0 +1,78 @@
+# ==========================================
+# SolopreneurOS Monorepo .gitignore
+# ==========================================
+
+# Environment variables & secrets (CRITICAL)
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# Python & Backend Ignore Rules
+# ==========================================
+backend/__pycache__/
+backend/*/__pycache__/
+backend/**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/.venv/
+backend/env/
+venv/
+.venv/
+env/
+ENV/
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+backend/*.db
+backend/*.sqlite3
+
+# Test & Coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Ephemeral Static Storage (Generated PDFs, Media)
+backend/static/*.pdf
+!backend/static/.gitkeep
+
+# ==========================================
+# Frontend & Node Ignore Rules
+# ==========================================
+frontend/node_modules/
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+dist/
+dist-ssr/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Framework cache
+.vite/
+.turbo/
+.eslintcache

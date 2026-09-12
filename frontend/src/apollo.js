@@ -1,7 +1,9 @@
 import { createClient, cacheExchange, fetchExchange } from 'urql';
 
+const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:8000/graphql';
+
 const client = createClient({
-  url: 'https://solopreneuros-backend.hf.space/graphql',
+  url: graphqlUrl,
   exchanges: [cacheExchange, fetchExchange],
   fetchOptions: () => {
     const token = localStorage.getItem('token');

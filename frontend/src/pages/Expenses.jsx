@@ -205,7 +205,7 @@ export default function Expenses() {
                   <div>
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Amount</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-3 text-slate-400 font-bold">{currencySymbol}</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold pointer-events-none">{currencySymbol}</span>
                       <input 
                         required 
                         type="number" 
