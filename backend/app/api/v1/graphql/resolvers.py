@@ -406,10 +406,13 @@ def respond_to_proposal_resolver(token: str, proposal_id: int, accept: bool, inf
     create_activity_log(db, client.organization_id, owner_id, f"Client {new_status.lower()} proposal", f"{proposal.title} ({client.name})")
     
     event = "proposal.accepted" if accept else "proposal.declined"
+    prop_pdf = generate_proposal_pdf(proposal, line_items, client, "$", org)
     trigger_webhooks(db, client.organization_id, event, {
         "proposal_id": proposal.id,
+        "proposal_number": f"PROP-{proposal.id:04d}",
         "title": proposal.title,
         "status": proposal.status,
+        "pdf_url": prop_pdf,
         "client_name": client.name,
         "client_email": client.email
     })
