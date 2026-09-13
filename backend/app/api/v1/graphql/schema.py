@@ -854,7 +854,16 @@ class Mutation:
         
         client = db.query(models.Client).get(new_invoice.client_id)
         org = db.query(models.Organization).get(user.organization_id)
-        pdf_url = f"{settings.API_BASE_URL.rstrip('/')}/static/Invoice_{new_invoice.id:04d}_{client.name.replace(' ', '_')}.pdf" if client else None
+        
+        currency_symbol = '$'
+        if user.currency_preference == 'EUR': currency_symbol = '€'
+        elif user.currency_preference == 'GBP': currency_symbol = '£'
+        elif user.currency_preference == 'INR': currency_symbol = '₹'
+        
+        from app.services.pdf import render_invoice_pdf
+        invoice_items = db.query(models.InvoiceLineItem).filter(models.InvoiceLineItem.invoice_id == new_invoice.id).all()
+        project = db.query(models.Project).get(new_invoice.project_id) if new_invoice.project_id else None
+        pdf_url = render_invoice_pdf(new_invoice, client, project, invoice_items, org, currency_symbol) if client else None
         portal_url = f"{settings.FRONTEND_URL.rstrip('/')}/portal/{client.portal_token}" if client and client.portal_token else None
         
         invoice_payload = {

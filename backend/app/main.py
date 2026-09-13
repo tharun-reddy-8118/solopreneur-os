@@ -26,6 +26,69 @@ app = FastAPI(
 
 # Static directory for generated invoices and media
 os.makedirs(settings.STATIC_DIR, exist_ok=True)
+
+import re
+from fastapi.responses import FileResponse
+
+@app.get("/static/{filename}", tags=["Media"])
+def get_static_pdf(filename: str, db: Session = Depends(get_db)):
+    file_path = os.path.join(settings.STATIC_DIR, filename)
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="application/pdf" if filename.endswith(".pdf") else None)
+
+    # 1. Dynamic Proposal PDF on-demand generator
+    match_prop = re.match(r"^Proposal_(\d+)_(.+)\.pdf$", filename, re.IGNORECASE)
+    if match_prop:
+        prop_id = int(match_prop.group(1))
+        proposal = db.query(models.Proposal).filter(models.Proposal.id == prop_id).first()
+        if proposal:
+            client = db.query(models.Client).get(proposal.client_id)
+            org = db.query(models.Organization).get(proposal.organization_id)
+            line_items = db.query(models.ProposalLineItem).filter(models.ProposalLineItem.proposal_id == proposal.id).all()
+            from app.services.pdf import render_proposal_pdf
+            currency_symbol = '$'
+            owner = db.query(models.User).filter(models.User.organization_id == proposal.organization_id).first()
+            if owner and getattr(owner, "currency_preference", None) == 'INR': currency_symbol = '₹'
+            elif owner and getattr(owner, "currency_preference", None) == 'EUR': currency_symbol = '€'
+            elif owner and getattr(owner, "currency_preference", None) == 'GBP': currency_symbol = '£'
+            render_proposal_pdf(proposal, client, line_items, org, currency_symbol)
+            if os.path.exists(file_path):
+                return FileResponse(file_path, media_type="application/pdf")
+            alt1 = os.path.join(settings.STATIC_DIR, f"Proposal_{prop_id:04d}_{client.name.replace(' ', '_')}.pdf") if client else None
+            if alt1 and os.path.exists(alt1):
+                return FileResponse(alt1, media_type="application/pdf")
+            alt2 = os.path.join(settings.STATIC_DIR, f"Proposal_{prop_id}_{client.name.replace(' ', '_')}.pdf") if client else None
+            if alt2 and os.path.exists(alt2):
+                return FileResponse(alt2, media_type="application/pdf")
+
+    # 2. Dynamic Invoice PDF on-demand generator
+    match_inv = re.match(r"^Invoice_(\d+)_(.+)\.pdf$", filename, re.IGNORECASE)
+    if match_inv:
+        inv_id = int(match_inv.group(1))
+        invoice = db.query(models.Invoice).filter(models.Invoice.id == inv_id).first()
+        if invoice:
+            client = db.query(models.Client).get(invoice.client_id)
+            project = db.query(models.Project).get(invoice.project_id) if invoice.project_id else None
+            org = db.query(models.Organization).get(invoice.organization_id)
+            line_items = db.query(models.InvoiceLineItem).filter(models.InvoiceLineItem.invoice_id == invoice.id).all()
+            from app.services.pdf import render_invoice_pdf
+            currency_symbol = '$'
+            owner = db.query(models.User).filter(models.User.organization_id == invoice.organization_id).first()
+            if owner and getattr(owner, "currency_preference", None) == 'INR': currency_symbol = '₹'
+            elif owner and getattr(owner, "currency_preference", None) == 'EUR': currency_symbol = '€'
+            elif owner and getattr(owner, "currency_preference", None) == 'GBP': currency_symbol = '£'
+            render_invoice_pdf(invoice, client, project, line_items, org, currency_symbol)
+            if os.path.exists(file_path):
+                return FileResponse(file_path, media_type="application/pdf")
+            alt1 = os.path.join(settings.STATIC_DIR, f"Invoice_{inv_id:04d}_{client.name.replace(' ', '_')}.pdf") if client else None
+            if alt1 and os.path.exists(alt1):
+                return FileResponse(alt1, media_type="application/pdf")
+            alt2 = os.path.join(settings.STATIC_DIR, f"Invoice_{inv_id}_{client.name.replace(' ', '_')}.pdf") if client else None
+            if alt2 and os.path.exists(alt2):
+                return FileResponse(alt2, media_type="application/pdf")
+
+    raise HTTPException(status_code=404, detail="File not found")
+
 app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 
 # Production CORS

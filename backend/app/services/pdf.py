@@ -303,6 +303,13 @@ def render_invoice_pdf(invoice, client, project, line_items, org=None, currency_
     _draw_footer(c, width, margin_left, margin_right, current_page, current_page, text_muted, border_color, "Thank you for your business! SolopreneurOS Enterprise Verified.")
     
     c.save()
+    try:
+        alt_filename = f"Invoice_{invoice.id}_{clean_client_name}.pdf"
+        alt_filepath = os.path.join(static_dir, alt_filename)
+        import shutil
+        shutil.copyfile(pdf_filepath, alt_filepath)
+    except Exception:
+        pass
     base_api = settings.API_BASE_URL.rstrip('/')
     return f"{base_api}/static/{pdf_filename}"
 
@@ -315,8 +322,10 @@ def render_proposal_pdf(proposal, client, line_items, org=None, currency_symbol=
     static_dir = settings.STATIC_DIR
     os.makedirs(static_dir, exist_ok=True)
     clean_client_name = "".join(c for c in (client.name if client and client.name else "Client") if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
-    pdf_filename = f"Proposal_{proposal.id}_{clean_client_name}.pdf"
+    pdf_filename = f"Proposal_{proposal.id:04d}_{clean_client_name}.pdf"
     pdf_filepath = os.path.join(static_dir, pdf_filename)
+    alt_filename = f"Proposal_{proposal.id}_{clean_client_name}.pdf"
+    alt_filepath = os.path.join(static_dir, alt_filename)
     
     c = canvas.Canvas(pdf_filepath, pagesize=letter)
     width, height = letter
@@ -541,6 +550,11 @@ def render_proposal_pdf(proposal, client, line_items, org=None, currency_symbol=
     _draw_footer(c, width, margin_left, margin_right, current_page, current_page, text_muted, border_color, "CONFIDENTIAL DOCUMENT • SOLOPRENEUROS ENTERPRISE")
     
     c.save()
+    try:
+        import shutil
+        shutil.copyfile(pdf_filepath, alt_filepath)
+    except Exception:
+        pass
     base_api = settings.API_BASE_URL.rstrip('/')
     return f"{base_api}/static/{pdf_filename}"
 
