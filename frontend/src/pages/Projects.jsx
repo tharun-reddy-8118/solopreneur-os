@@ -12,9 +12,13 @@ import { useTenant } from '../context/TenantContext';
 
 const GET_PROJECTS_AND_CLIENTS = gql`
   query GetProjectsAndClients {
+    me {
+      currencyPreference
+    }
     clients {
       id
       name
+      currency
       projects {
         id
         name
@@ -49,6 +53,17 @@ export default function Projects() {
   const { tenant } = useTenant();
   const [result, reexecuteQuery] = useQuery({ query: GET_PROJECTS_AND_CLIENTS });
   const { data, fetching, error } = result;
+
+  const currencySymbols = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    CAD: 'CA$',
+    AUD: 'A$',
+    SGD: 'S$'
+  };
+  const currencySymbol = currencySymbols[data?.me?.currencyPreference] || '$';
 
   const [addResult, executeAdd] = useMutation(ADD_PROJECT);
   const [updateResult, executeUpdate] = useMutation(UPDATE_PROJECT);
@@ -213,12 +228,12 @@ export default function Projects() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Hourly Billing Rate ($/hr)
+                    Hourly Billing Rate ({currencySymbol}/hr)
                   </label>
                   <input 
                     type="number" 
                     step="0.01"
-                    placeholder="e.g. 95.00" 
+                    placeholder={currencySymbol === '₹' ? 'e.g. 1500' : 'e.g. 95.00'} 
                     value={newProjectRate}
                     onChange={e => setNewProjectRate(e.target.value)}
                     className="glass-input"
@@ -391,7 +406,7 @@ export default function Projects() {
                     {/* Billing Model */}
                     <div className="col-span-2 flex items-center">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        {project.hourlyRate ? `$${project.hourlyRate}/hr` : 'Fixed Fee'}
+                        {project.hourlyRate ? `${currencySymbol}${project.hourlyRate}/hr` : 'Fixed Fee'}
                       </span>
                     </div>
 

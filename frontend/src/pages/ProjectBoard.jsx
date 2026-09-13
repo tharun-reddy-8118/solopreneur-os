@@ -7,6 +7,9 @@ import TaskDetailModal from './TaskDetailModal';
 
 const GET_PROJECT = gql`
   query GetProject($id: Int!) {
+    me {
+      currencyPreference
+    }
     project(id: $id) {
       id
       name
@@ -120,6 +123,17 @@ export default function ProjectBoard() {
   const { data, fetching, error } = result;
   const project = data?.project;
 
+  const currencySymbols = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    CAD: 'CA$',
+    AUD: 'A$',
+    SGD: 'S$'
+  };
+  const currencySymbol = currencySymbols[data?.me?.currencyPreference] || '$';
+
   const [addTaskResult, executeAddTask] = useMutation(ADD_TASK);
   const [updateTaskResult, executeUpdateTask] = useMutation(UPDATE_TASK);
   const [addTimeLogResult, executeAddTimeLog] = useMutation(ADD_TIME_LOG);
@@ -216,7 +230,7 @@ export default function ProjectBoard() {
           {invoiceMessage && <span className="text-xs font-bold text-emerald-600 mb-2 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">{invoiceMessage}</span>}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 shadow-sm">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Rate / hr:</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Rate ({currencySymbol}/hr):</span>
               <input 
                 type="number"
                 value={rateInput}

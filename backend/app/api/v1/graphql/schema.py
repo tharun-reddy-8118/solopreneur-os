@@ -763,7 +763,26 @@ class Mutation:
 
     @strawberry.mutation
     def create_project(self, client_id: int, name: str, description: typing.Optional[str] = "", hourly_rate: typing.Optional[float] = 0.0, info: strawberry.Info = None) -> ProjectType:
-        return self.add_project(name=name, client_id=client_id, description=description, hourly_rate=hourly_rate, info=info)
+        user = get_user_or_error(info)
+        db = info.context["db"]
+        client = db.query(models.Client).filter(
+            models.Client.id == client_id,
+            models.Client.organization_id == user.organization_id
+        ).first()
+        if not client:
+            raise Exception("Client not found in your Workspace")
+        new_project = models.Project(
+            name=name,
+            client_id=client_id,
+            description=description or "",
+            hourly_rate=hourly_rate if hourly_rate is not None else 0.0,
+            organization_id=user.organization_id
+        )
+        db.add(new_project)
+        db.commit()
+        db.refresh(new_project)
+        create_activity_log(db, user.organization_id, user.id, "created a new project", f"for {client.name}")
+        return new_project
 
     @strawberry.mutation
     def update_project(
