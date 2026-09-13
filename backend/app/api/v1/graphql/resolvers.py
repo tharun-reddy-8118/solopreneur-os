@@ -186,7 +186,7 @@ def invite_team_member_resolver(email: str, name: str, role: str, info: strawber
         "organization_slug": org.slug if org and hasattr(org, "slug") else None,
         "login_url": f"{settings.FRONTEND_URL.rstrip('/')}"
     }
-    trigger_webhooks(db, user.organization_id, "team_invitation", invite_payload)
+    trigger_webhooks(db, user.organization_id, "team.invited", invite_payload)
     
     return new_user
 

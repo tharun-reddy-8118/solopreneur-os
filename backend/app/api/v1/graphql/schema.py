@@ -499,7 +499,7 @@ class Mutation:
         try:
             import requests
             requests.post("https://hook.eu1.make.com/us4sjup7fkfshjwrfikawob2cwdlxnvv", json={
-                "event": "user_signup_otp",
+                "event": "signup.otp",
                 "email": target_user.email,
                 "to": target_user.email,
                 "name": target_user.name,
@@ -577,7 +577,7 @@ class Mutation:
         try:
             import requests
             requests.post("https://hook.eu1.make.com/us4sjup7fkfshjwrfikawob2cwdlxnvv", json={
-                "event": "user_signup_otp",
+                "event": "signup.otp",
                 "email": user.email,
                 "to": user.email,
                 "name": user.name,
