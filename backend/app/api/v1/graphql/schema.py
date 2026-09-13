@@ -499,7 +499,16 @@ class Mutation:
         try:
             import requests
             requests.post("https://hook.eu1.make.com/us4sjup7fkfshjwrfikawob2cwdlxnvv", json={
-                "event": "signup.otp",
+                "event": "user_signup_otp",
+                "email": target_user.email,
+                "to": target_user.email,
+                "name": target_user.name,
+                "otp": otp,
+                "temp_password": "",
+                "organization_name": org.name if org else org_name,
+                "organization_slug": org.slug if org else "",
+                "user_id": target_user.id,
+                "login_url": f"{settings.FRONTEND_URL.rstrip('/')}",
                 "data": {
                     "user_id": target_user.id,
                     "name": target_user.name,
@@ -568,7 +577,16 @@ class Mutation:
         try:
             import requests
             requests.post("https://hook.eu1.make.com/us4sjup7fkfshjwrfikawob2cwdlxnvv", json={
-                "event": "signup.otp",
+                "event": "user_signup_otp",
+                "email": user.email,
+                "to": user.email,
+                "name": user.name,
+                "otp": otp,
+                "temp_password": "",
+                "organization_name": org.name if org else "Workspace",
+                "organization_slug": org.slug if org else "",
+                "user_id": user.id,
+                "login_url": f"{settings.FRONTEND_URL.rstrip('/')}",
                 "data": {
                     "user_id": user.id,
                     "name": user.name,

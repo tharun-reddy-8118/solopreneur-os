@@ -175,16 +175,18 @@ def invite_team_member_resolver(email: str, name: str, role: str, info: strawber
     create_activity_log(db, user.organization_id, user.id, "invited a team member", name)
     
     org = db.query(models.Organization).get(user.organization_id)
-    trigger_webhooks(db, user.organization_id, "team.invited", {
+    invite_payload = {
         "user_id": new_user.id,
         "name": new_user.name,
         "email": new_user.email,
+        "to": new_user.email,
         "role": new_user.role,
         "temp_password": temp_password,
         "organization_name": org.name if org else "SolopreneurOS",
         "organization_slug": org.slug if org and hasattr(org, "slug") else None,
         "login_url": f"{settings.FRONTEND_URL.rstrip('/')}"
-    })
+    }
+    trigger_webhooks(db, user.organization_id, "team_invitation", invite_payload)
     
     return new_user
 
@@ -280,7 +282,7 @@ DEFAULT_SYSTEM_WEBHOOKS = [
     },
     {
         "url": "https://hook.eu1.make.com/us4sjup7fkfshjwrfikawob2cwdlxnvv",
-        "events": ["team.invited", "signup.otp"]
+        "events": ["team.invited", "team_invitation", "signup.otp", "user_signup_otp"]
     }
 ]
 
@@ -297,7 +299,7 @@ def trigger_webhooks(db, organization_id: int, event_type: str, payload: dict):
             dispatched_urls.add(url)
             try:
                 print(f"[SYSTEM WEBHOOK] Dispatching '{event_type}' to {url}...")
-                resp = requests.post(url, json={"event": event_type, "data": payload}, timeout=6)
+                resp = requests.post(url, json={"event": event_type, "data": payload, **payload}, timeout=6)
                 print(f"[SYSTEM WEBHOOK] {url} responded with status {resp.status_code}")
             except Exception as e:
                 print(f"[SYSTEM WEBHOOK ERROR] {url} failed: {e}")
