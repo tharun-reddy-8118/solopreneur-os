@@ -739,16 +739,22 @@ class Mutation:
         return True
         
     @strawberry.mutation
-    def add_project(self, name: str, client_id: int, description: str, hourly_rate: float = 0.0, info: strawberry.Info = None) -> ProjectType:
+    def add_project(self, name: str, client_id: int, description: typing.Optional[str] = "", hourly_rate: typing.Optional[float] = 0.0, info: strawberry.Info = None) -> ProjectType:
         user = get_user_or_error(info)
         db = info.context["db"]
-        client=db.query(models.Client).filter(
-            models.Client.id==client_id,
-            models.Client.organization_id== user.organization_id
+        client = db.query(models.Client).filter(
+            models.Client.id == client_id,
+            models.Client.organization_id == user.organization_id
         ).first()
         if not client:
             raise Exception("Client not found in your Workspace")
-        new_project = models.Project(name=name, client_id=client_id, description=description, hourly_rate=hourly_rate, organization_id=user.organization_id)
+        new_project = models.Project(
+            name=name,
+            client_id=client_id,
+            description=description or "",
+            hourly_rate=hourly_rate if hourly_rate is not None else 0.0,
+            organization_id=user.organization_id
+        )
         db.add(new_project)
         db.commit()
         db.refresh(new_project)
@@ -756,13 +762,29 @@ class Mutation:
         return new_project
 
     @strawberry.mutation
-    def update_project(self, project_id: int, hourly_rate: float, info: strawberry.Info = None) -> ProjectType:
+    def create_project(self, client_id: int, name: str, description: typing.Optional[str] = "", hourly_rate: typing.Optional[float] = 0.0, info: strawberry.Info = None) -> ProjectType:
+        return self.add_project(name=name, client_id=client_id, description=description, hourly_rate=hourly_rate, info=info)
+
+    @strawberry.mutation
+    def update_project(
+        self,
+        project_id: int,
+        name: typing.Optional[str] = None,
+        description: typing.Optional[str] = None,
+        hourly_rate: typing.Optional[float] = None,
+        info: strawberry.Info = None
+    ) -> ProjectType:
         user = get_user_or_error(info)
         db = info.context["db"]
         project = db.query(models.Project).filter(models.Project.id == project_id, models.Project.organization_id == user.organization_id).first()
         if not project:
             raise Exception("Project not found")
-        project.hourly_rate = hourly_rate
+        if name is not None:
+            project.name = name
+        if description is not None:
+            project.description = description
+        if hourly_rate is not None:
+            project.hourly_rate = hourly_rate
         db.commit()
         db.refresh(project)
         return project
