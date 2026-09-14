@@ -861,7 +861,7 @@ class Mutation:
         return delete_team_member_resolver(user_id, info)
 
     @strawberry.mutation
-    def add_invoice(self, client_id: int, project_id: int, line_items: typing.List[InvoiceLineItemInput], status: str, info: strawberry.Info) -> InvoiceType:
+    def add_invoice(self, client_id: int, project_id: int, line_items: list[InvoiceLineItemInput], status: str = "Sent", info: strawberry.Info = None) -> InvoiceType:
         user = get_user_or_error(info)
         check_role(user,["Owner","Admin"])
         db = info.context["db"]

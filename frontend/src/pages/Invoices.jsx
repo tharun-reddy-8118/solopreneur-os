@@ -37,7 +37,7 @@ const GET_INVOICES_AND_CLIENTS = gql`
 
 const ADD_INVOICE = gql`
   mutation AddInvoice($clientId: Int!, $projectId: Int!, $lineItems: [InvoiceLineItemInput!]!) {
-    addInvoice(clientId: $clientId, projectId: $projectId, lineItems: $lineItems, status: "Pending") {
+    addInvoice(clientId: $clientId, projectId: $projectId, lineItems: $lineItems, status: "Sent") {
       id
       amount
       status
