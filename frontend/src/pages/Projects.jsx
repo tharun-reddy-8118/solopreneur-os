@@ -50,9 +50,11 @@ const UPDATE_PROJECT = gql`
 `;
 
 export default function Projects() {
-  const { tenant } = useTenant();
+  const { tenant, user } = useTenant();
   const [result, reexecuteQuery] = useQuery({ query: GET_PROJECTS_AND_CLIENTS });
   const { data, fetching, error } = result;
+
+  const canManageProjects = user?.role === 'Owner' || user?.role === 'Admin';
 
   const currencySymbols = {
     USD: '$',
@@ -80,6 +82,10 @@ export default function Projects() {
 
   const handleAddProject = async (e) => {
     e.preventDefault();
+    if (!canManageProjects) {
+      toast.error('Only Workspace Owners and Admins can create projects.');
+      return;
+    }
     if (!selectedClientId || !newProjectName) return;
     
     const res = await executeAdd({ 
@@ -92,12 +98,12 @@ export default function Projects() {
     if (res.error) {
       toast.error(res.error.message);
     } else {
-      toast.success(`Project "${newProjectName}" created!`);
+      toast.success('Project created successfully!');
+      setShowAddForm(false);
       setNewProjectName('');
       setNewProjectDesc('');
       setNewProjectRate('');
       setSelectedClientId('');
-      setShowAddForm(false);
       reexecuteQuery({ requestPolicy: 'network-only' });
     }
   };
@@ -105,8 +111,15 @@ export default function Projects() {
   const startEditing = (e, project) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!canManageProjects) {
+      toast.error('Only Workspace Owners and Admins can edit projects.');
+      return;
+    }
     setEditingProjectId(project.id);
-    setEditProjectData({ name: project.name, description: project.description || '' });
+    setEditProjectData({
+      name: project.name,
+      description: project.description || ''
+    });
   };
 
   const cancelEditing = (e) => {
@@ -164,13 +177,15 @@ export default function Projects() {
           </p>
         </div>
         
-        <button 
-          onClick={() => setShowAddForm(true)}
-          className="btn-primary py-2.5 px-4 text-xs flex items-center gap-2 shadow-sm"
-        >
-          <Plus size={16} />
-          <span>New Project</span>
-        </button>
+        {canManageProjects && (
+          <button 
+            onClick={() => setShowAddForm(true)}
+            className="btn-primary py-2.5 px-4 text-xs flex items-center gap-2 shadow-sm"
+          >
+            <Plus size={16} />
+            <span>New Project</span>
+          </button>
+        )}
       </div>
 
       {/* Add Project Form Drawer */}
@@ -313,9 +328,11 @@ export default function Projects() {
           title="No active projects"
           description="Create your first project workspace to start tracking tasks on the interactive Kanban board."
           action={
-            <button onClick={() => setShowAddForm(true)} className="btn-primary flex items-center gap-2">
-              <Plus size={16} /> Create First Project
-            </button>
+            canManageProjects ? (
+              <button onClick={() => setShowAddForm(true)} className="btn-primary flex items-center gap-2">
+                <Plus size={16} /> Create First Project
+              </button>
+            ) : undefined
           }
         />
       ) : (
@@ -412,13 +429,15 @@ export default function Projects() {
 
                     {/* Action Link to Board */}
                     <div className="col-span-2 flex items-center justify-between md:justify-end gap-2">
-                      <button 
-                        onClick={(e) => startEditing(e, project)}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        title="Edit Project Details"
-                      >
-                        <Edit2 size={14} />
-                      </button>
+                      {canManageProjects && (
+                        <button 
+                          onClick={(e) => startEditing(e, project)}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          title="Edit Project Details"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      )}
 
                       <Link 
                         to={`${baseProjectRoute}/${project.id}`}

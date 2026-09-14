@@ -90,7 +90,7 @@ const StatCard = ({ title, value, subtitle, trend, icon: Icon, badgeColor = "eme
 };
 
 export default function Dashboard() {
-  const { tenant, setQuickCreateOpen } = useTenant();
+  const { tenant, user, setQuickCreateOpen } = useTenant();
   const [result] = useQuery({ query: GET_STATS });
   const { data, fetching, error } = result;
 
@@ -110,6 +110,8 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  const isOwnerOrAdmin = data?.me?.role === 'Owner' || data?.me?.role === 'Admin' || user?.role === 'Owner' || user?.role === 'Admin';
 
   const currencySymbol = data?.me?.currencyPreference === 'EUR' ? '€' : 
                          data?.me?.currencyPreference === 'GBP' ? '£' : 
@@ -149,29 +151,52 @@ export default function Dashboard() {
               </span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              Welcome back, {data?.me?.name?.split(' ')[0] || 'Partner'}
+              Welcome back, {data?.me?.name?.split(' ')[0] || 'Team Member'}
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-              Real-time financial performance, client operations, and invoice velocity.
+              {isOwnerOrAdmin 
+                ? 'Real-time financial performance, client operations, and invoice velocity.' 
+                : 'Workspace deliverables, milestone tracking, and task execution.'}
             </p>
           </div>
 
           {/* Quick Action CTAs */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => setQuickCreateOpen('client')}
-              className="btn-primary py-2.5 px-4 text-xs flex items-center gap-2 shadow-sm"
-            >
-              <Plus size={16} />
-              <span>New Client</span>
-            </button>
-            <Link
-              to="/invoices"
-              className="btn-secondary py-2.5 px-4 text-xs flex items-center gap-2"
-            >
-              <FileText size={16} />
-              <span>Create Invoice</span>
-            </Link>
+            {isOwnerOrAdmin ? (
+              <>
+                <button
+                  onClick={() => setQuickCreateOpen('client')}
+                  className="btn-primary py-2.5 px-4 text-xs flex items-center gap-2 shadow-sm"
+                >
+                  <Plus size={16} />
+                  <span>New Client</span>
+                </button>
+                <Link
+                  to="/invoices"
+                  className="btn-secondary py-2.5 px-4 text-xs flex items-center gap-2"
+                >
+                  <FileText size={16} />
+                  <span>Create Invoice</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/projects"
+                  className="btn-primary py-2.5 px-4 text-xs flex items-center gap-2 shadow-sm"
+                >
+                  <Briefcase size={16} />
+                  <span>My Projects</span>
+                </Link>
+                <Link
+                  to="/timesheets"
+                  className="btn-secondary py-2.5 px-4 text-xs flex items-center gap-2"
+                >
+                  <Clock size={16} />
+                  <span>Timesheets</span>
+                </Link>
+              </>
+            )}
             <button
               onClick={handleCopyLink}
               title="Copy your Tenant Workspace Link"
@@ -185,56 +210,84 @@ export default function Dashboard() {
       </div>
 
       {/* Main KPI Quad Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard 
-          title="Collected Revenue" 
-          value={`${currencySymbol}${totalRevenue.toLocaleString()}`} 
-          subtitle={`${data?.invoices?.filter(i => i.status === 'Paid').length || 0} settled`}
-          trend="+ Cash Inflow"
-          icon={DollarSign}
-        />
-        <StatCard 
-          title="Operating Expenses" 
-          value={`${currencySymbol}${totalExpenses.toLocaleString()}`} 
-          subtitle="Direct business costs"
-          trend="Overhead"
-          icon={Wallet}
-        />
-        <StatCard 
-          title="Net Profit" 
-          value={netProfit < 0 
-            ? `-${currencySymbol}${Math.abs(netProfit).toLocaleString()}` 
-            : `${currencySymbol}${netProfit.toLocaleString()}`} 
-          subtitle={`${profitPercentage}% margin efficiency`}
-          trend={netProfit > 0 && Number(profitPercentage) > 50 ? '+ High Margin' : netProfit >= 0 ? 'Balanced' : 'Deficit'}
-          icon={TrendingUp}
-        />
-        <StatCard 
-          title="Receivables Pending" 
-          value={`${currencySymbol}${pendingInvoicedAmount.toLocaleString()}`} 
-          subtitle={`${unpaidInvoices} awaiting payment`}
-          trend={unpaidInvoices > 0 ? `${unpaidInvoices} due` : 'Zero Due'}
-          icon={FileText}
-        />
-      </div>
+      {isOwnerOrAdmin ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <StatCard 
+            title="Collected Revenue" 
+            value={`${currencySymbol}${totalRevenue.toLocaleString()}`} 
+            subtitle={`${data?.invoices?.filter(i => i.status === 'Paid').length || 0} settled`}
+            trend="+ Cash Inflow"
+            icon={DollarSign}
+          />
+          <StatCard 
+            title="Operating Expenses" 
+            value={`${currencySymbol}${totalExpenses.toLocaleString()}`} 
+            subtitle="Direct business costs"
+            trend="Overhead"
+            icon={Wallet}
+          />
+          <StatCard 
+            title="Net Profit" 
+            value={netProfit < 0 
+              ? `-${currencySymbol}${Math.abs(netProfit).toLocaleString()}` 
+              : `${currencySymbol}${netProfit.toLocaleString()}`} 
+            subtitle={`${profitPercentage}% margin efficiency`}
+            trend={netProfit > 0 && Number(profitPercentage) > 50 ? '+ High Margin' : netProfit >= 0 ? 'Balanced' : 'Deficit'}
+            icon={TrendingUp}
+          />
+          <StatCard 
+            title="Receivables Pending" 
+            value={`${currencySymbol}${pendingInvoicedAmount.toLocaleString()}`} 
+            subtitle={`${unpaidInvoices} awaiting payment`}
+            trend={unpaidInvoices > 0 ? `${unpaidInvoices} due` : 'Zero Due'}
+            icon={FileText}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <StatCard 
+            title="Active Workspaces" 
+            value={activeProjects} 
+            subtitle="Current client projects"
+            trend="Ongoing"
+            icon={Briefcase}
+          />
+          <StatCard 
+            title="CRM Accounts" 
+            value={totalClients} 
+            subtitle="Connected enterprise clients"
+            trend="Connected"
+            icon={Users}
+          />
+          <StatCard 
+            title="Logged Hours" 
+            value="Active" 
+            subtitle="Billable time tracking"
+            trend="Logged"
+            icon={Clock}
+          />
+        </div>
+      )}
 
       {/* Secondary Quick Metrics Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <Link 
-          to="/clients" 
-          className="glass-card p-5 flex items-center justify-between group hover:border-brand-primary transition-all duration-200"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <Users size={20} />
+      <div className={`grid grid-cols-1 ${isOwnerOrAdmin ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-5`}>
+        {isOwnerOrAdmin && (
+          <Link 
+            to="/clients" 
+            className="glass-card p-5 flex items-center justify-between group hover:border-brand-primary transition-all duration-200"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <Users size={20} />
+              </div>
+              <div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">{totalClients} Active</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Clients in CRM</div>
+              </div>
             </div>
-            <div>
-              <div className="text-xl font-bold text-slate-900 dark:text-white">{totalClients} Active</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Clients in CRM</div>
-            </div>
-          </div>
-          <ArrowRight size={18} className="text-slate-400 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-        </Link>
+            <ArrowRight size={18} className="text-slate-400 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+          </Link>
+        )}
 
         <Link 
           to="/projects" 
@@ -270,10 +323,11 @@ export default function Dashboard() {
       </div>
 
       {/* Split Grid: Financial Health Visualizer & Live Activity Stream */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 ${isOwnerOrAdmin ? 'lg:grid-cols-2' : ''} gap-6`}>
         
         {/* Financial Margin Breakdown */}
-        <div className="glass-card p-6 sm:p-7 flex flex-col justify-between">
+        {isOwnerOrAdmin && (
+          <div className="glass-card p-6 sm:p-7 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -327,8 +381,9 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+      )}
 
-        {/* Live Workspace Activity Feed */}
+      {/* Live Workspace Activity Feed */}
         <div className="glass-card p-6 sm:p-7 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">

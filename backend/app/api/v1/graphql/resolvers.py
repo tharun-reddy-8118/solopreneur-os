@@ -117,6 +117,7 @@ def preview_proposal_resolver(proposal_id: int, info: strawberry.Info) -> str:
 
 def send_proposal_resolver(proposal_id: int, info: strawberry.Info) -> str:
     user = get_user_or_error(info)
+    check_role(user, ["Owner", "Admin"])
     db = info.context["db"]
     proposal = db.query(models.Proposal).filter(models.Proposal.id == proposal_id, models.Proposal.organization_id == user.organization_id).first()
     if not proposal: raise Exception("Proposal not found")
@@ -226,6 +227,7 @@ def delete_team_member_resolver(user_id: int, info: strawberry.Info) -> bool:
 
 def send_invoice_resolver(invoice_id: int, info: strawberry.Info) -> str:
     user = get_user_or_error(info)
+    check_role(user, ["Owner", "Admin"])
     db = info.context["db"]
     invoice = db.query(models.Invoice).filter(models.Invoice.id == invoice_id, models.Invoice.organization_id == user.organization_id).first()
     if not invoice:

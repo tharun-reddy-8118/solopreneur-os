@@ -778,6 +778,7 @@ class Mutation:
     @strawberry.mutation
     def add_project(self, name: str, client_id: int, description: typing.Optional[str] = "", hourly_rate: typing.Optional[float] = 0.0, info: strawberry.Info = None) -> ProjectType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         client = db.query(models.Client).filter(
             models.Client.id == client_id,
@@ -801,6 +802,7 @@ class Mutation:
     @strawberry.mutation
     def create_project(self, client_id: int, name: str, description: typing.Optional[str] = "", hourly_rate: typing.Optional[float] = 0.0, info: strawberry.Info = None) -> ProjectType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         client = db.query(models.Client).filter(
             models.Client.id == client_id,
@@ -831,6 +833,7 @@ class Mutation:
         info: strawberry.Info = None
     ) -> ProjectType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         project = db.query(models.Project).filter(models.Project.id == project_id, models.Project.organization_id == user.organization_id).first()
         if not project:
@@ -1122,6 +1125,7 @@ class Mutation:
     @strawberry.mutation
     def add_proposal(self, client_id: int, title: str, description: str, line_items: list[ProposalLineItemInput], info: strawberry.Info = None) -> ProposalType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         
         proposal = models.Proposal(
@@ -1149,6 +1153,7 @@ class Mutation:
     @strawberry.mutation
     def update_proposal(self, proposal_id: int, title: str, description: str, line_items: list[ProposalLineItemInput], info: strawberry.Info = None) -> ProposalType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         
         proposal = db.query(models.Proposal).filter(models.Proposal.id == proposal_id, models.Proposal.organization_id == user.organization_id).first()
@@ -1184,6 +1189,7 @@ class Mutation:
     @strawberry.mutation
     def convert_proposal_to_project(self, proposal_id: int, info: strawberry.Info = None) -> ProjectType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         
         proposal = db.query(models.Proposal).filter(models.Proposal.id == proposal_id, models.Proposal.organization_id == user.organization_id).first()
@@ -1208,6 +1214,7 @@ class Mutation:
     @strawberry.mutation
     def add_expense(self, amount: float, category: str, description: str, date: str, info: strawberry.Info = None) -> ExpenseType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         try:
             parsed_date = datetime.datetime.strptime(date, "%Y-%m-%d")
@@ -1230,6 +1237,7 @@ class Mutation:
     @strawberry.mutation
     def delete_expense(self, expense_id: int, info: strawberry.Info = None) -> bool:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         expense = db.query(models.Expense).filter(models.Expense.id == expense_id, models.Expense.organization_id == user.organization_id).first()
         if not expense:
@@ -1294,6 +1302,7 @@ class Mutation:
     @strawberry.mutation
     def generate_api_key(self, name: str, info: strawberry.Info) -> ApiKeyType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         import secrets
         key = "sk_" + secrets.token_urlsafe(32)
@@ -1306,6 +1315,7 @@ class Mutation:
     @strawberry.mutation
     def revoke_api_key(self, key_id: int, info: strawberry.Info) -> bool:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         key = db.query(models.ApiKey).filter(models.ApiKey.id == key_id, models.ApiKey.organization_id == user.organization_id).first()
         if key:
@@ -1316,6 +1326,7 @@ class Mutation:
     @strawberry.mutation
     def add_webhook(self, url: str, event_type: str, info: strawberry.Info) -> WebhookType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         new_hook = models.Webhook(url=url, event_type=event_type, organization_id=user.organization_id)
         db.add(new_hook)
@@ -1332,6 +1343,7 @@ class Mutation:
     @strawberry.mutation
     def delete_webhook(self, webhook_id: int, info: strawberry.Info) -> bool:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         hook = db.query(models.Webhook).filter(models.Webhook.id == webhook_id, models.Webhook.organization_id == user.organization_id).first()
         if hook:
@@ -1347,6 +1359,82 @@ class Mutation:
 
     @strawberry.mutation
     def send_invoice(self, invoice_id: int, info: strawberry.Info) -> str:
+        user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         return send_invoice_resolver(invoice_id, info)
+
+    @strawberry.mutation
+    def request_password_reset(self, email: str, info: strawberry.Info) -> bool:
+        db = info.context["db"]
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if not user:
+            raise Exception("No account registered with this email address.")
+            
+        import random
+        from datetime import datetime, timedelta
+        otp = f"{random.randint(100000, 999999)}"
+        user.verification_otp = otp
+        user.otp_expires_at = datetime.utcnow() + timedelta(minutes=15)
+        db.commit()
+
+        org = db.query(models.Organization).get(user.organization_id) if user.organization_id else None
+
+        try:
+            import requests
+            requests.post("https://hook.eu1.make.com/us4sjup7fkfshjwrfikawob2cwdlxnvv", json={
+                "event": "auth.forgot_password",
+                "email": user.email,
+                "to": user.email,
+                "name": user.name,
+                "otp": otp,
+                "organization_name": org.name if org else "Workspace",
+                "organization_slug": org.slug if org else "",
+                "user_id": user.id,
+                "login_url": f"{settings.FRONTEND_URL.rstrip('/')}",
+                "data": {
+                    "user_id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "organization_name": org.name if org else "Workspace",
+                    "organization_slug": org.slug if org else "",
+                    "otp": otp,
+                    "login_url": f"{settings.FRONTEND_URL.rstrip('/')}"
+                }
+            }, timeout=5)
+        except Exception as e:
+            print(f"[FORGOT PASSWORD ERROR] {e}")
+        return True
+
+    @strawberry.mutation
+    def reset_password_with_otp(self, email: str, otp: str, new_password: str, info: strawberry.Info) -> AuthPayload:
+        db = info.context["db"]
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if not user:
+            raise Exception("Account not found.")
+
+        from datetime import datetime
+        clean_otp = otp.strip() if otp else ""
+        if not user.verification_otp or user.verification_otp.strip() != clean_otp:
+            raise Exception("Invalid 6-digit reset code. Please check your inbox.")
+        
+        if user.otp_expires_at and user.otp_expires_at < datetime.utcnow():
+            raise Exception("Reset code has expired. Please request a new code.")
+
+        if len(new_password) < 6:
+            raise Exception("Password must be at least 6 characters long.")
+
+        user.hashed_password = get_password_hash(new_password)
+        user.verification_otp = None
+        user.otp_expires_at = None
+        user.must_change_password = False
+        user.is_verified = True
+        db.commit()
+
+        access_token = create_access_token(data={"sub": user.email})
+        return AuthPayload(
+            access_token=access_token,
+            token_type="bearer",
+            must_change_password=False
+        )
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

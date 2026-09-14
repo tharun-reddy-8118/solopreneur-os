@@ -268,6 +268,8 @@ export default function SettingsPage() {
     );
   }
 
+  const isOwnerOrAdmin = user?.role === 'Owner' || user?.role === 'Admin' || data?.me?.role === 'Owner' || data?.me?.role === 'Admin';
+
   return (
     <div className="pt-2 pb-14 w-full h-full max-w-4xl mx-auto space-y-6">
       {/* Top Header */}
@@ -275,39 +277,45 @@ export default function SettingsPage() {
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-bold uppercase tracking-wider text-brand-primary">Control Center</span>
         </div>
-        <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Workspace Settings</h2>
+        <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+          {isOwnerOrAdmin ? 'Workspace Settings' : 'My Account Settings'}
+        </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-          Manage tenant identity, enterprise compliance, white-label branding, currency, and developer integrations.
+          {isOwnerOrAdmin 
+            ? 'Manage tenant identity, enterprise compliance, white-label branding, currency, and developer integrations.'
+            : 'Manage your personal account profile details and authentication credentials.'}
         </p>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap sm:flex-nowrap bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xl gap-1">
-        <TabButton 
-          active={activeTab === 'general'} 
-          onClick={() => setActiveTab('general')} 
-          icon={<User size={16} />} 
-          label="Profile & Preferences" 
-        />
-        <TabButton 
-          active={activeTab === 'legal'} 
-          onClick={() => setActiveTab('legal')} 
-          icon={<Shield size={16} />} 
-          label="Enterprise Legal & Tax" 
-        />
-        <TabButton 
-          active={activeTab === 'branding'} 
-          onClick={() => setActiveTab('branding')} 
-          icon={<PaintBucket size={16} />} 
-          label="Branding & Portal" 
-        />
-        <TabButton 
-          active={activeTab === 'developer'} 
-          onClick={() => setActiveTab('developer')} 
-          icon={<Code size={16} />} 
-          label="API & Webhooks" 
-        />
-      </div>
+      {isOwnerOrAdmin && (
+        <div className="flex flex-wrap sm:flex-nowrap bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xl gap-1">
+          <TabButton 
+            active={activeTab === 'general'} 
+            onClick={() => setActiveTab('general')} 
+            icon={<User size={16} />} 
+            label="Profile & Preferences" 
+          />
+          <TabButton 
+            active={activeTab === 'legal'} 
+            onClick={() => setActiveTab('legal')} 
+            icon={<Shield size={16} />} 
+            label="Enterprise Legal & Tax" 
+          />
+          <TabButton 
+            active={activeTab === 'branding'} 
+            onClick={() => setActiveTab('branding')} 
+            icon={<PaintBucket size={16} />} 
+            label="Branding & Portal" 
+          />
+          <TabButton 
+            active={activeTab === 'developer'} 
+            onClick={() => setActiveTab('developer')} 
+            icon={<Code size={16} />} 
+            label="API & Webhooks" 
+          />
+        </div>
+      )}
 
       {/* Tab: General */}
       {activeTab === 'general' && (
@@ -315,9 +323,11 @@ export default function SettingsPage() {
           <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <User size={18} className="text-brand-primary" />
-              User Profile & Default Currency
+              {isOwnerOrAdmin ? 'User Profile & Default Currency' : 'My Profile'}
             </h3>
-            <p className="text-xs text-slate-500 mt-1">Your personal account details in this tenant organization.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              {isOwnerOrAdmin ? 'Your personal account details and default financial currency.' : 'Update your personal display name in this workspace.'}
+            </p>
           </div>
 
           <form onSubmit={handleProfileSubmit} className="space-y-4 max-w-xl">
@@ -346,25 +356,27 @@ export default function SettingsPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                Default Currency
-              </label>
-              <select 
-                value={currency} 
-                onChange={e => setCurrency(e.target.value)} 
-                className="glass-input"
-              >
-                <option value="USD">USD ($) - US Dollar</option>
-                <option value="EUR">EUR (€) - Euro</option>
-                <option value="GBP">GBP (£) - British Pound</option>
-                <option value="INR">INR (₹) - Indian Rupee</option>
-              </select>
-            </div>
+            {isOwnerOrAdmin && (
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  Default Currency
+                </label>
+                <select 
+                  value={currency} 
+                  onChange={e => setCurrency(e.target.value)} 
+                  className="glass-input"
+                >
+                  <option value="USD">USD ($) - US Dollar</option>
+                  <option value="EUR">EUR (€) - Euro</option>
+                  <option value="GBP">GBP (£) - British Pound</option>
+                  <option value="INR">INR (₹) - Indian Rupee</option>
+                </select>
+              </div>
+            )}
 
             <div className="pt-2">
               <button type="submit" className="btn-primary">
-                Save Preferences
+                Save Profile
               </button>
             </div>
           </form>

@@ -62,29 +62,33 @@ export default function Sidebar({ handleLogout, isDarkMode, setIsDarkMode, onClo
     );
   };
 
+  const isOwnerOrAdmin = user?.role === 'Owner' || user?.role === 'Admin';
+
   const navGroups = [
     {
       label: 'WORKSPACE',
       items: [
         { to: `${baseRoute}`, altTo: '/', icon: LayoutDashboard, label: 'Overview', isExact: true },
         { to: `${baseRoute}/projects`, altTo: '/projects', icon: Briefcase, label: 'Projects' },
-        { to: `${baseRoute}/clients`, altTo: '/clients', icon: Users, label: 'Clients' },
+        ...(isOwnerOrAdmin ? [{ to: `${baseRoute}/clients`, altTo: '/clients', icon: Users, label: 'Clients' }] : []),
         { to: `${baseRoute}/timesheets`, altTo: '/timesheets', icon: Clock, label: 'Timesheets' },
       ],
     },
-    {
-      label: 'FINANCE & SALES',
-      items: [
-        { to: `${baseRoute}/invoices`, altTo: '/invoices', icon: FileText, label: 'Invoices' },
-        { to: `${baseRoute}/proposals`, altTo: '/proposals', icon: FileSignature, label: 'Proposals' },
-        { to: `${baseRoute}/expenses`, altTo: '/expenses', icon: Wallet, label: 'Expenses' },
-      ],
-    },
+    ...(isOwnerOrAdmin ? [
+      {
+        label: 'FINANCE & SALES',
+        items: [
+          { to: `${baseRoute}/invoices`, altTo: '/invoices', icon: FileText, label: 'Invoices' },
+          { to: `${baseRoute}/proposals`, altTo: '/proposals', icon: FileSignature, label: 'Proposals' },
+          { to: `${baseRoute}/expenses`, altTo: '/expenses', icon: Wallet, label: 'Expenses' },
+        ],
+      },
+    ] : []),
     {
       label: 'ORGANIZATION',
       items: [
-        { to: `${baseRoute}/team`, altTo: '/team', icon: ShieldCheck, label: 'Team & Access' },
-        { to: `${baseRoute}/settings`, altTo: '/settings', icon: Settings, label: 'Settings & Brand' },
+        ...(isOwnerOrAdmin ? [{ to: `${baseRoute}/team`, altTo: '/team', icon: ShieldCheck, label: 'Team & Access' }] : []),
+        { to: `${baseRoute}/settings`, altTo: '/settings', icon: Settings, label: isOwnerOrAdmin ? 'Settings & Brand' : 'Account Settings' },
       ],
     },
   ];
