@@ -126,7 +126,7 @@ def render_invoice_pdf(invoice, client, project, line_items, org=None, currency_
     c.drawRightString(width - margin_right, meta_y - 14, f"{str(invoice.created_at)[:10]}")
     
     status_str = (invoice.status or "Draft").upper()
-    status_color = colors.HexColor("#10b981") if status_str == "PAID" else colors.HexColor("#f59e0b")
+    status_color = colors.HexColor("#10b981") if status_str == "PAID" else colors.HexColor("#6366f1") if status_str == "SENT" else colors.HexColor("#f59e0b")
     c.setFont("Helvetica-Bold", 8.5)
     c.setFillColor(status_color)
     c.drawRightString(width - margin_right, meta_y - 28, status_str)

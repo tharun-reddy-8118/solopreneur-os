@@ -445,7 +445,7 @@ export default function Invoices() {
 
         {/* Status Filter Tabs */}
         <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
-          {['ALL', 'Paid', 'Pending', 'Overdue'].map(status => (
+          {['ALL', 'Pending', 'Sent', 'Paid', 'Overdue'].map(status => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
@@ -540,10 +540,13 @@ export default function Invoices() {
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60' 
                         : invoice.status === 'Overdue'
                         ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/60'
+                        : invoice.status === 'Sent'
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-800/60'
                         : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/60'
                     }`}
                   >
                     <option value="Pending">Pending</option>
+                    <option value="Sent">Sent</option>
                     <option value="Paid">Paid</option>
                     <option value="Overdue">Overdue</option>
                   </select>
@@ -554,15 +557,21 @@ export default function Invoices() {
                   <button 
                     onClick={() => handleSendInvoice(invoice.id)}
                     disabled={sendingId === invoice.id || (user && user.role !== 'Owner' && user.role !== 'Admin')}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800/60 rounded-lg transition-all cursor-pointer disabled:opacity-50"
-                    title="Send Invoice to Client via Webhook/Email"
+                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border rounded-lg transition-all cursor-pointer disabled:opacity-50 ${
+                      invoice.status === 'Sent'
+                        ? 'text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800/60'
+                        : invoice.status === 'Paid'
+                        ? 'text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700'
+                        : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border-emerald-200 dark:border-emerald-800/60'
+                    }`}
+                    title={invoice.status === 'Sent' ? "Invoice already sent. Click to resend." : "Send Invoice to Client via Webhook/Email"}
                   >
                     {sendingId === invoice.id ? (
                       <Loader2 size={13} className="animate-spin" />
                     ) : (
                       <Send size={13} />
                     )}
-                    <span>Send</span>
+                    <span>{invoice.status === 'Sent' ? 'Resend' : 'Send'}</span>
                   </button>
                   <button 
                     onClick={() => handleDownloadPdf(invoice.id)}

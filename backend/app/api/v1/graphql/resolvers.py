@@ -244,6 +244,11 @@ def send_invoice_resolver(invoice_id: int, info: strawberry.Info) -> str:
     elif user.currency_preference == 'GBP': currency_symbol = '£'
     elif user.currency_preference == 'INR': currency_symbol = 'Rs. '
 
+    if invoice.status != "Paid":
+        invoice.status = "Sent"
+        db.commit()
+        db.refresh(invoice)
+
     pdf_url = "".join(render_invoice_pdf(invoice, client, project, line_items, org, currency_symbol).split())
     portal_url = f"{settings.FRONTEND_URL.rstrip('/')}/portal/{client.portal_token}" if client and client.portal_token else None
     
