@@ -914,6 +914,8 @@ class Mutation:
             "client_email": client.email if client else "",
             "status": new_invoice.status,
             "pdf_url": pdf_url,
+            "url": pdf_url,
+            "file_url": pdf_url,
             "portal_url": portal_url,
             "organization_name": org.name if org else "SolopreneurOS"
         }

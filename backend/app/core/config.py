@@ -15,9 +15,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = ["*"]
     
     API_BASE_URL: str = os.getenv("API_BASE_URL") or (
-        f"https://{os.getenv('SPACE_HOST')}" if os.getenv("SPACE_HOST") else (
-            "https://solopreneuros-backend.hf.space" if os.getenv("SPACE_ID") or os.getenv("ENVIRONMENT") == "production" else "http://localhost:8000"
-        )
+        f"https://{os.getenv('SPACE_HOST')}" if os.getenv("SPACE_HOST") else "https://solopreneuros-backend.hf.space"
     )
     FRONTEND_URL: str = os.getenv("FRONTEND_URL") or "https://solopreneur-os-eta.vercel.app"
     

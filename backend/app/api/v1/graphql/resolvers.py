@@ -143,6 +143,8 @@ def send_proposal_resolver(proposal_id: int, info: strawberry.Info) -> str:
         "title": proposal.title,
         "status": proposal.status,
         "pdf_url": pdf_url,
+        "url": pdf_url,
+        "file_url": pdf_url,
         "client_name": client.name if client else "Client",
         "client_email": client.email if client else "",
         "portal_url": portal_url,
@@ -253,6 +255,8 @@ def send_invoice_resolver(invoice_id: int, info: strawberry.Info) -> str:
         "client_email": client.email if client else "",
         "status": invoice.status,
         "pdf_url": pdf_url,
+        "url": pdf_url,
+        "file_url": pdf_url,
         "portal_url": portal_url,
         "organization_name": org.name if org else "SolopreneurOS"
     }

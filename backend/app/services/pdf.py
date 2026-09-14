@@ -313,6 +313,8 @@ def render_invoice_pdf(invoice, client, project, line_items, org=None, currency_
     except Exception:
         pass
     base_api = settings.API_BASE_URL.rstrip('/')
+    if not base_api or "localhost" in base_api:
+        base_api = "https://solopreneuros-backend.hf.space"
     return f"{base_api}/static/{pdf_filename}"
 
 
@@ -560,5 +562,7 @@ def render_proposal_pdf(proposal, client, line_items, org=None, currency_symbol=
     except Exception:
         pass
     base_api = settings.API_BASE_URL.rstrip('/')
+    if not base_api or "localhost" in base_api:
+        base_api = "https://solopreneuros-backend.hf.space"
     return f"{base_api}/static/{pdf_filename}"
 
