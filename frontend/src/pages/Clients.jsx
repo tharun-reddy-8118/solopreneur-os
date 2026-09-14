@@ -13,6 +13,10 @@ import { useTenant } from '../context/TenantContext';
 
 const GET_CLIENTS = gql`
   query GetClients {
+    me {
+      id
+      role
+    }
     clients {
       id
       name
@@ -150,9 +154,12 @@ const defaultFormState = {
 };
 
 export default function Clients() {
-  const { tenant } = useTenant();
+  const { tenant, user } = useTenant();
   const [result, reexecuteQuery] = useQuery({ query: GET_CLIENTS });
   const { data, fetching, error } = result;
+  
+  const userRole = data?.me?.role || user?.role;
+  const canManageClients = userRole === 'Owner' || userRole === 'Admin';
   
   const [addClientResult, executeAddClient] = useMutation(ADD_CLIENT);
   const [updateClientResult, executeUpdateClient] = useMutation(UPDATE_CLIENT);
@@ -166,6 +173,10 @@ export default function Clients() {
   const [copiedTokenId, setCopiedTokenId] = useState(null);
 
   const openAddModal = () => {
+    if (!canManageClients) {
+      toast.error('Only Workspace Owners and Admins can register clients.');
+      return;
+    }
     setEditingClientId(null);
     setFormData(defaultFormState);
     setActiveModalTab('general');
@@ -173,6 +184,10 @@ export default function Clients() {
   };
 
   const openEditModal = (client) => {
+    if (!canManageClients) {
+      toast.error('Only Workspace Owners and Admins can edit client details.');
+      return;
+    }
     setEditingClientId(client.id);
     setFormData({
       name: client.name || '',
@@ -233,6 +248,10 @@ export default function Clients() {
   };
 
   const handleDeleteClient = async (client) => {
+    if (!canManageClients) {
+      toast.error('Only Workspace Owners and Admins can delete clients.');
+      return;
+    }
     if (confirm(`Are you sure you want to delete ${client.name}? All linked projects and invoices will also be removed.`)) {
       const res = await executeDeleteClient({ clientId: client.id });
       if (res.error) {
@@ -281,13 +300,15 @@ export default function Clients() {
           </p>
         </div>
         
-        <button 
-          onClick={openAddModal}
-          className="btn-primary py-2.5 px-4 text-xs flex items-center gap-2 shadow-sm shrink-0"
-        >
-          <Plus size={16} />
-          <span>Add Enterprise Client</span>
-        </button>
+        {canManageClients && (
+          <button 
+            onClick={openAddModal}
+            className="btn-primary py-2.5 px-4 text-xs flex items-center gap-2 shadow-sm shrink-0"
+          >
+            <Plus size={16} />
+            <span>Add Enterprise Client</span>
+          </button>
+        )}
       </div>
 
       {/* Search & Filter Bar */}
@@ -329,9 +350,11 @@ export default function Clients() {
           title="No clients in your directory"
           description="Register your first enterprise client to manage billing, deliverable portals, and contracts."
           action={
-            <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
-              <Plus size={16} /> Add First Client
-            </button>
+            canManageClients ? (
+              <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
+                <Plus size={16} /> Add First Client
+              </button>
+            ) : undefined
           }
         />
       ) : (
@@ -449,21 +472,25 @@ export default function Clients() {
                       <span className="text-[11px] text-slate-400">No Portal</span>
                     )}
 
-                    <button 
-                      onClick={() => openEditModal(client)}
-                      className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      title="Edit Client Profile"
-                    >
-                      <Edit2 size={14} />
-                    </button>
+                    {canManageClients && (
+                      <>
+                        <button 
+                          onClick={() => openEditModal(client)}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          title="Edit Client Profile"
+                        >
+                          <Edit2 size={14} />
+                        </button>
 
-                    <button 
-                      onClick={() => handleDeleteClient(client)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                      title="Delete Client"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                        <button 
+                          onClick={() => handleDeleteClient(client)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                          title="Delete Client"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               );

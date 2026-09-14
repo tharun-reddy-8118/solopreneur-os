@@ -17,6 +17,15 @@ from app.api.v1.graphql.schema import schema
 # Ensure tables are initialized
 models.Base.metadata.create_all(bind=engine)
 
+# Safe column migration for users table
+import sqlalchemy as sa
+with engine.connect() as _conn:
+    try:
+        _conn.execute(sa.text("ALTER TABLE users ADD COLUMN must_change_password BOOLEAN DEFAULT 0"))
+        _conn.commit()
+    except Exception:
+        pass
+
 # App factory
 app = FastAPI(
     title=settings.PROJECT_NAME,

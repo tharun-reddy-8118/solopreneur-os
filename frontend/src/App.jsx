@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import CommandPalette from './components/CommandPalette';
 import QuickCreateModal from './components/QuickCreateModal';
+import SetPasswordModal from './components/SetPasswordModal';
 
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
@@ -82,9 +83,10 @@ function App() {
           }} 
         />
         
-        {/* Global Command Palette & Quick Create */}
+        {/* Global Command Palette & Quick Create & First Login Password Setup */}
         <CommandPalette />
         <QuickCreateModal />
+        <SetPasswordModal />
 
         <div className="flex h-screen w-full overflow-hidden bg-[#f8fafc] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
           

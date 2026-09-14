@@ -19,6 +19,7 @@ class User(Base):
     is_verified = Column(Boolean, default=False, nullable=False)
     verification_otp = Column(String, nullable=True)
     otp_expires_at = Column(DateTime, nullable=True)
+    must_change_password = Column(Boolean, default=False, nullable=False)
     
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True)
     organization = relationship("Organization", back_populates="users")

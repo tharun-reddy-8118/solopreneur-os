@@ -49,6 +49,7 @@ class UserType:
     currency_preference: str
     organization_id: int
     role: str
+    must_change_password: bool = False
 
 @strawberry.type
 class SubtaskType:
@@ -266,6 +267,7 @@ class ApiKeyType:
 class AuthPayload:
     access_token: str
     token_type: str
+    must_change_password: bool = False
 
 @strawberry.type
 class RegisterResult:
@@ -539,7 +541,11 @@ class Mutation:
         from datetime import datetime
         if user.is_verified:
             access_token = create_access_token(data={"sub": user.email})
-            return AuthPayload(access_token=access_token, token_type="bearer")
+            return AuthPayload(
+                access_token=access_token, 
+                token_type="bearer",
+                must_change_password=getattr(user, "must_change_password", False)
+            )
 
         clean_otp = otp.strip() if otp else ""
         if not user.verification_otp or user.verification_otp.strip() != clean_otp:
@@ -554,7 +560,11 @@ class Mutation:
         db.commit()
 
         access_token = create_access_token(data={"sub": user.email})
-        return AuthPayload(access_token=access_token, token_type="bearer")
+        return AuthPayload(
+            access_token=access_token, 
+            token_type="bearer",
+            must_change_password=getattr(user, "must_change_password", False)
+        )
 
     @strawberry.mutation
     def resend_signup_otp(self, email: str, info: strawberry.Info) -> bool:
@@ -612,7 +622,11 @@ class Mutation:
             raise Exception("Account pending verification. Please verify the 6-digit code sent to your email.")
         
         access_token = create_access_token(data={"sub": user.email})
-        return AuthPayload(access_token=access_token, token_type="bearer")
+        return AuthPayload(
+            access_token=access_token, 
+            token_type="bearer",
+            must_change_password=getattr(user, "must_change_password", False)
+        )
 
     @strawberry.mutation
     def update_profile(self, name: str, currency_preference: str, info: strawberry.Info) -> UserType:
@@ -623,6 +637,26 @@ class Mutation:
         db.commit()
         db.refresh(user)
         create_activity_log(db, user.organization_id, user.id, "updated profile settings", f"{name}")
+        return user
+
+    @strawberry.mutation
+    def change_password(self, new_password: str, current_password: typing.Optional[str] = None, info: strawberry.Info = None) -> UserType:
+        user = get_user_or_error(info)
+        db = info.context["db"]
+        
+        # If user is not flagged as must_change_password and provided current_password, verify it
+        if not getattr(user, "must_change_password", False) and current_password:
+            if not verify_password(current_password, user.hashed_password):
+                raise Exception("Current password is incorrect")
+                
+        if len(new_password) < 6:
+            raise Exception("Password must be at least 6 characters long")
+            
+        user.hashed_password = get_password_hash(new_password)
+        user.must_change_password = False
+        db.commit()
+        db.refresh(user)
+        create_activity_log(db, user.organization_id, user.id, "updated account password", user.name)
         return user
 
     @strawberry.mutation
@@ -646,6 +680,7 @@ class Mutation:
         info: strawberry.Info = None
     ) -> ClientType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         import uuid
         token = str(uuid.uuid4()).replace("-", "")
@@ -696,6 +731,7 @@ class Mutation:
         info: strawberry.Info = None
     ) -> ClientType:
         user = get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db = info.context["db"]
         client = db.query(models.Client).filter(
             models.Client.id == client_id,
@@ -726,6 +762,7 @@ class Mutation:
     @strawberry.mutation
     def delete_client(self,client_id:int,info:strawberry.Info)->bool:
         user=get_user_or_error(info)
+        check_role(user, ["Owner", "Admin"])
         db=info.context["db"]
         client=db.query(models.Client).filter(
             models.Client.id==client_id,

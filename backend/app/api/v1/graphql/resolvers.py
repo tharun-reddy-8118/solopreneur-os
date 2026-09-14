@@ -167,7 +167,9 @@ def invite_team_member_resolver(email: str, name: str, role: str, info: strawber
         name=name,
         role=role,
         hashed_password=hashed_password,
-        organization_id=user.organization_id
+        organization_id=user.organization_id,
+        is_verified=True,
+        must_change_password=True
     )
     db.add(new_user)
     db.commit()

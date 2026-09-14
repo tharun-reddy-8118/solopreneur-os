@@ -25,8 +25,12 @@ const CREATE_PROJECT_MUTATION = gql`
 `;
 
 export default function QuickCreateModal() {
-  const { quickCreateOpen, setQuickCreateOpen } = useTenant();
-  const [tab, setTab] = useState(quickCreateOpen || 'client');
+  const { quickCreateOpen, setQuickCreateOpen, user } = useTenant();
+  const canManageClients = user?.role === 'Owner' || user?.role === 'Admin';
+  const initialTab = (typeof quickCreateOpen === 'string' && (canManageClients || quickCreateOpen !== 'client')) 
+    ? quickCreateOpen 
+    : (canManageClients ? 'client' : 'project');
+  const [tab, setTab] = useState(initialTab);
 
   // Client form state
   const [clientForm, setClientForm] = useState({ name: '', email: '' });
@@ -34,10 +38,16 @@ export default function QuickCreateModal() {
 
   if (!quickCreateOpen) return null;
 
-  const currentTab = typeof quickCreateOpen === 'string' ? quickCreateOpen : tab;
+  const currentTab = (typeof quickCreateOpen === 'string' && (canManageClients || quickCreateOpen !== 'client')) 
+    ? quickCreateOpen 
+    : tab;
 
   const handleCreateClient = async (e) => {
     e.preventDefault();
+    if (!canManageClients) {
+      toast.error('Only Workspace Owners and Admins can create clients.');
+      return;
+    }
     if (!clientForm.name || !clientForm.email) {
       toast.error('Please provide name and email');
       return;
@@ -86,17 +96,19 @@ export default function QuickCreateModal() {
 
         {/* Tab Selector */}
         <div className="flex gap-2 my-4 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
-          <button
-            type="button"
-            onClick={() => setTab('client')}
-            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              currentTab === 'client' 
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Users size={14} /> Client
-          </button>
+          {canManageClients && (
+            <button
+              type="button"
+              onClick={() => setTab('client')}
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                currentTab === 'client' 
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' 
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <Users size={14} /> Client
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {

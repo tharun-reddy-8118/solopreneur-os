@@ -11,6 +11,7 @@ const GET_CURRENT_WORKSPACE = gql`
       role
       currencyPreference
       organizationId
+      mustChangePassword
     }
     organization {
       id
