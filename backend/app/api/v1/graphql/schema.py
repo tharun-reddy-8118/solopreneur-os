@@ -858,7 +858,7 @@ class Mutation:
         currency_symbol = '$'
         if user.currency_preference == 'EUR': currency_symbol = '€'
         elif user.currency_preference == 'GBP': currency_symbol = '£'
-        elif user.currency_preference == 'INR': currency_symbol = '₹'
+        elif user.currency_preference == 'INR': currency_symbol = 'Rs. '
         
         from app.services.pdf import render_invoice_pdf
         invoice_items = db.query(models.InvoiceLineItem).filter(models.InvoiceLineItem.invoice_id == new_invoice.id).all()

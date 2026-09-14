@@ -68,6 +68,8 @@ def render_invoice_pdf(invoice, client, project, line_items, org=None, currency_
     Renders a pixel-perfect, beautifully aligned enterprise invoice PDF
     with complete tax compliance, vendor registration, and client billing details.
     """
+    if currency_symbol and ("₹" in currency_symbol or "INR" in currency_symbol):
+        currency_symbol = "Rs. "
     static_dir = settings.STATIC_DIR
     os.makedirs(static_dir, exist_ok=True)
     clean_client_name = "".join(c for c in (client.name if client and client.name else "Client") if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
@@ -319,6 +321,8 @@ def render_proposal_pdf(proposal, client, line_items, org=None, currency_symbol=
     Renders a pixel-perfect, beautifully aligned enterprise proposal & SOW PDF
     with complete organization legal context and client contact details.
     """
+    if currency_symbol and ("₹" in currency_symbol or "INR" in currency_symbol):
+        currency_symbol = "Rs. "
     static_dir = settings.STATIC_DIR
     os.makedirs(static_dir, exist_ok=True)
     clean_client_name = "".join(c for c in (client.name if client and client.name else "Client") if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")

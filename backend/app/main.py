@@ -48,7 +48,7 @@ def get_static_pdf(filename: str, db: Session = Depends(get_db)):
             from app.services.pdf import render_proposal_pdf
             currency_symbol = '$'
             owner = db.query(models.User).filter(models.User.organization_id == proposal.organization_id).first()
-            if owner and getattr(owner, "currency_preference", None) == 'INR': currency_symbol = '₹'
+            if owner and getattr(owner, "currency_preference", None) == 'INR': currency_symbol = 'Rs. '
             elif owner and getattr(owner, "currency_preference", None) == 'EUR': currency_symbol = '€'
             elif owner and getattr(owner, "currency_preference", None) == 'GBP': currency_symbol = '£'
             render_proposal_pdf(proposal, client, line_items, org, currency_symbol)
@@ -74,7 +74,7 @@ def get_static_pdf(filename: str, db: Session = Depends(get_db)):
             from app.services.pdf import render_invoice_pdf
             currency_symbol = '$'
             owner = db.query(models.User).filter(models.User.organization_id == invoice.organization_id).first()
-            if owner and getattr(owner, "currency_preference", None) == 'INR': currency_symbol = '₹'
+            if owner and getattr(owner, "currency_preference", None) == 'INR': currency_symbol = 'Rs. '
             elif owner and getattr(owner, "currency_preference", None) == 'EUR': currency_symbol = '€'
             elif owner and getattr(owner, "currency_preference", None) == 'GBP': currency_symbol = '£'
             render_invoice_pdf(invoice, client, project, line_items, org, currency_symbol)
