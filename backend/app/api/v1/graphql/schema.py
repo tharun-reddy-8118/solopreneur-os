@@ -902,8 +902,8 @@ class Mutation:
         
         from app.services.pdf import render_invoice_pdf
         invoice_items = db.query(models.InvoiceLineItem).filter(models.InvoiceLineItem.invoice_id == new_invoice.id).all()
-        project = db.query(models.Project).get(new_invoice.project_id) if new_invoice.project_id else None
-        pdf_url = render_invoice_pdf(new_invoice, client, project, invoice_items, org, currency_symbol) if client else None
+        raw_pdf_url = render_invoice_pdf(new_invoice, client, project, invoice_items, org, currency_symbol) if client else None
+        pdf_url = "".join(raw_pdf_url.split()) if raw_pdf_url else None
         portal_url = f"{settings.FRONTEND_URL.rstrip('/')}/portal/{client.portal_token}" if client and client.portal_token else None
         
         invoice_payload = {

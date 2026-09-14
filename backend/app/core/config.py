@@ -14,10 +14,10 @@ class Settings(BaseSettings):
     
     CORS_ORIGINS: List[str] = ["*"]
     
-    API_BASE_URL: str = os.getenv("API_BASE_URL") or (
-        f"https://{os.getenv('SPACE_HOST')}" if os.getenv("SPACE_HOST") else "https://solopreneuros-backend.hf.space"
-    )
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL") or "https://solopreneur-os-eta.vercel.app"
+    API_BASE_URL: str = "".join((os.getenv("API_BASE_URL") or (
+        f"https://{os.getenv('SPACE_HOST').strip()}" if os.getenv("SPACE_HOST") else "https://solopreneuros-backend.hf.space"
+    )).split())
+    FRONTEND_URL: str = "".join((os.getenv("FRONTEND_URL") or "https://solopreneur-os-eta.vercel.app").split())
     
     STATIC_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "static")
 
