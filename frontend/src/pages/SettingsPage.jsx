@@ -12,7 +12,7 @@ import { useTenant } from '../context/TenantContext';
 const GET_SETTINGS_DATA = gql`
   query GetSettingsData {
     me {
-      id name email currencyPreference
+      id name email currencyPreference role
     }
     organization {
       id name brandColor logoUrl slug
@@ -111,7 +111,7 @@ const DELETE_WEBHOOK = gql`
 `;
 
 export default function SettingsPage() {
-  const { tenant, refetchTenant } = useTenant();
+  const { tenant, user, refetchTenant } = useTenant();
   const [result, reexecuteQuery] = useQuery({ query: GET_SETTINGS_DATA });
   const { data, fetching, error } = result;
 
