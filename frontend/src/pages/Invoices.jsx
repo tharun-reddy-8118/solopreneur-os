@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useClient, gql } from 'urql';
 import { 
   Loader2, FileText, Plus, Trash2, Download, Receipt, 
-  Search, CheckCircle2, Clock, AlertCircle, DollarSign, Filter, X
+  Search, CheckCircle2, Clock, AlertCircle, DollarSign, Filter, X,
+  Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -59,14 +60,21 @@ const GENERATE_INVOICE_PDF = gql`
   }
 `;
 
+const SEND_INVOICE = gql`
+  mutation SendInvoice($invoiceId: Int!) {
+    sendInvoice(invoiceId: $invoiceId)
+  }
+`;
+
 export default function Invoices() {
-  const { tenant } = useTenant();
+  const { tenant, user } = useTenant();
   const client = useClient();
   const [result, reexecuteQuery] = useQuery({ query: GET_INVOICES_AND_CLIENTS });
   const { data, fetching, error } = result;
 
   const [addResult, executeAdd] = useMutation(ADD_INVOICE);
   const [updateResult, executeUpdate] = useMutation(UPDATE_INVOICE);
+  const [sendResult, executeSendInvoice] = useMutation(SEND_INVOICE);
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [clientId, setClientId] = useState('');
@@ -74,6 +82,19 @@ export default function Invoices() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [downloadingId, setDownloadingId] = useState(null);
+  const [sendingId, setSendingId] = useState(null);
+
+  const handleSendInvoice = async (invoiceId) => {
+    setSendingId(invoiceId);
+    const res = await executeSendInvoice({ invoiceId });
+    setSendingId(null);
+    if (res.error) {
+      toast.error(res.error.message.replace('[GraphQL] ', ''));
+    } else {
+      toast.success('Invoice dispatched to client & webhook!');
+      reexecuteQuery({ requestPolicy: 'network-only' });
+    }
+  };
   
   // Line items state
   const [lineItems, setLineItems] = useState([
@@ -466,7 +487,7 @@ export default function Invoices() {
             <div className="col-span-4">Client & Project</div>
             <div className="col-span-2">Amount</div>
             <div className="col-span-2">Status</div>
-            <div className="col-span-2 text-right">PDF</div>
+            <div className="col-span-2 text-right">Actions</div>
           </div>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -528,12 +549,25 @@ export default function Invoices() {
                   </select>
                 </div>
 
-                {/* PDF Action */}
-                <div className="col-span-2 flex justify-end">
+                {/* Actions: Send & PDF */}
+                <div className="col-span-2 flex items-center justify-end gap-1.5">
+                  <button 
+                    onClick={() => handleSendInvoice(invoice.id)}
+                    disabled={sendingId === invoice.id || (user && user.role !== 'Owner' && user.role !== 'Admin')}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800/60 rounded-lg transition-all cursor-pointer disabled:opacity-50"
+                    title="Send Invoice to Client via Webhook/Email"
+                  >
+                    {sendingId === invoice.id ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      <Send size={13} />
+                    )}
+                    <span>Send</span>
+                  </button>
                   <button 
                     onClick={() => handleDownloadPdf(invoice.id)}
                     disabled={downloadingId === invoice.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary-light hover:opacity-90 rounded-lg transition-all"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary-light hover:opacity-90 rounded-lg transition-all cursor-pointer"
                     title="Download Official PDF"
                   >
                     {downloadingId === invoice.id ? (

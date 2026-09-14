@@ -277,16 +277,16 @@ def resolve_comments_for_task(root, info):
 
 DEFAULT_SYSTEM_WEBHOOKS = [
     {
+        "url": "https://hook.eu1.make.com/9pm11yl8jfiz33mdgf2o3vht4un3q92p",
+        "events": ["proposal.send", "invoice.send", "invoice.created"]
+    },
+    {
         "url": "https://hook.eu1.make.com/forivn1dqc9g2flysx6znrbu5e4jxgk9",
         "events": ["invoice.send", "invoice.created"]
     },
     {
-        "url": "https://hook.eu1.make.com/9pm11yl8jfiz33mdgf2o3vht4un3q92p",
-        "events": ["proposal.send"]
-    },
-    {
         "url": "https://hook.eu1.make.com/us4sjup7fkfshjwrfikawob2cwdlxnvv",
-        "events": ["team.invited", "team_invitation", "signup.otp", "user_signup_otp"]
+        "events": ["team.invited", "team_invitation", "signup.otp", "user_signup_otp", "auth.forgot_password"]
     }
 ]
 
